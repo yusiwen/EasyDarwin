@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/MeloQi/EasyGoLib/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/penggy/EasyGoLib/utils"
 )
 
 /**
