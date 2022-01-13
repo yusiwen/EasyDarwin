@@ -1,6 +1,6 @@
 import Vue from 'vue'
 
-import Login from 'components/Login.vue'
+import Login from './components/Login.vue'
 
 new Vue({
   el: '#app',
@@ -10,7 +10,7 @@ new Vue({
   },
   mounted() {
     $(document).ajaxError((evt, xhr, opts, ex) => {
-        if (xhr.status == 404) {
+        if (xhr.status === 404) {
             xhr.responseText = "请求服务不存在或已停止";
         }
         var msg = xhr.responseText;

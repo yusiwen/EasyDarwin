@@ -30,7 +30,7 @@
 import "bootstrap/dist/css/bootstrap.css"
 import "admin-lte/dist/css/AdminLTE.css"
 import "admin-lte/dist/css/skins/_all-skins.css"
-import "assets/styles/custom.less"
+import "../assets/styles/custom.less"
 
 import "bootstrap/dist/js/bootstrap.js"
 import "admin-lte/dist/js/adminlte.js"
@@ -56,7 +56,7 @@ Vue.use(VeeValidate, {
 });
 
 import ElementUI from "element-ui"
-import 'assets/styles/element-custom.scss'
+import '../assets/styles/element-custom.scss'
 
 Vue.use(ElementUI);
 

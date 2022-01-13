@@ -16,8 +16,7 @@
 </template>
 
 <script>
-import Vue from 'vue'
-import FormDlg from 'components/FormDlg.vue'
+import FormDlg from './FormDlg.vue'
 import $ from 'jquery'
 
 export default {
