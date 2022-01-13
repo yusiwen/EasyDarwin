@@ -17,7 +17,7 @@ module.exports = {
         "login": ['babel-polyfill', resolve('login.js')]
     },
     output: {
-        path: resolve('../www'),
+        path: resolve('static'),
         chunkFilename: 'js/[name].[chunkhash:8].js',
         filename: 'js/[name].[chunkhash:8].js'
     },
@@ -146,8 +146,8 @@ module.exports = {
 
 if (process.env.NODE_ENV === "production") {
     module.exports.plugins = (module.exports.plugins || []).concat([
-        new CleanWebpackPlugin(['www'], {
-            root: resolve("../")
+        new CleanWebpackPlugin(['static'], {
+            root: resolve("./")
         }),
         new webpack.DefinePlugin({
             'process.env': {
