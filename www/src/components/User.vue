@@ -47,7 +47,7 @@
 </template>
 
 <script>
-import UserFormDlg from 'components/UserFormDlg.vue'
+import UserFormDlg from './UserFormDlg.vue'
 
 import $ from 'jquery'
 

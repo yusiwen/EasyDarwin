@@ -13,11 +13,11 @@ function resolve(dir) {
 
 module.exports = {
     entry: {
-        "index": ['babel-polyfill', resolve('index.js')],
-        "login": ['babel-polyfill', resolve('login.js')]
+        "index": ['babel-polyfill', resolve('src/index.js')],
+        "login": ['babel-polyfill', resolve('src/login.js')]
     },
     output: {
-        path: resolve('static'),
+        path: resolve('dist'),
         chunkFilename: 'js/[name].[chunkhash:8].js',
         filename: 'js/[name].[chunkhash:8].js'
     },
@@ -27,9 +27,7 @@ module.exports = {
     resolve: {
         extensions: ['.js', '.vue', '.json'],
         alias: {
-            'vue$': 'vue/dist/vue.common.js',
-            'assets': resolve('assets'),
-            'components': resolve('components')
+            'vue$': 'vue/dist/vue.common.js'
         }
     },
     devServer: {
@@ -121,7 +119,9 @@ module.exports = {
         }),
         new webpack.HashedModuleIdsPlugin(),
         new CopyWebpackPlugin([
-            { from: 'externals' },
+            { from: 'src/assets/js/jquery-2.2.4.js', to: 'js/' },
+            { from: 'src/assets/crossdomain.xml' },
+            { from: 'src/assets/favicon.ico' },
             { from: 'node_modules/easy-player/dist/component/easy-player-lib.min.js', to: 'js/'},
             { from: 'node_modules/easy-player/dist/component/easy-player-fluent.swf'},
             { from: 'node_modules/easy-player/dist/component/easy-player.swf'}
@@ -146,7 +146,7 @@ module.exports = {
 
 if (process.env.NODE_ENV === "production") {
     module.exports.plugins = (module.exports.plugins || []).concat([
-        new CleanWebpackPlugin(['static'], {
+        new CleanWebpackPlugin(['dist'], {
             root: resolve("./")
         }),
         new webpack.DefinePlugin({
