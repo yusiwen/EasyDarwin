@@ -22,7 +22,7 @@ import "font-awesome/css/font-awesome.css"
 import "bootstrap/dist/css/bootstrap.css"
 import "admin-lte/dist/css/AdminLTE.css"
 import "admin-lte/dist/css/skins/_all-skins.css"
-import "assets/styles/custom.less"
+import "../assets/styles/custom.less"
 
 import "bootstrap/dist/js/bootstrap.js"
 import "admin-lte/dist/js/adminlte.js"
@@ -30,12 +30,12 @@ import "admin-lte/dist/js/adminlte.js"
 import { mapState, mapActions } from "vuex"
 import Vue from 'vue'
 import moment from 'moment'
-import Sider from 'components/Sider.vue'
-import NaviBar from 'components/NaviBar.vue'
-import ModifyPasswordDlg from 'components/ModifyPasswordDlg.vue'
+import Sider from './Sider.vue'
+import NaviBar from './NaviBar.vue'
+import ModifyPasswordDlg from './ModifyPasswordDlg.vue'
 
 import ElementUI from "element-ui"
-import 'assets/styles/element-custom.scss'
+import '../assets/styles/element-custom.scss'
 Vue.use(ElementUI);
 
 import VCharts from 'v-charts'
