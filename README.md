@@ -82,7 +82,7 @@
         go get -u -v github.com/penggy/gobuild
 
         # npm tools
-        npm i -g apidoc
+        npm i -g apidoc@0.29.0
         npm i -g rimraf
 
 

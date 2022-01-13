@@ -2,13 +2,13 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import store from './store'
 
-import AdminLTE from 'components/AdminLTE.vue'
+import AdminLTE from './components/AdminLTE.vue'
 
-const Dashboard = () => import(/* webpackChunkName: 'dashboard' */ 'components/Dashboard.vue')
-const PusherList = () => import(/* webpackChunkName: 'pushers' */ 'components/PusherList.vue')
-const PlayerList = () => import(/* webpackChunkName: 'players' */ 'components/PlayerList.vue')
-const User = () => import(/* webpackChunkName: 'user' */ 'components/User.vue')
-const About = () => import(/* webpackChunkName: 'about' */ 'components/About.vue')
+const Dashboard = () => import(/* webpackChunkName: 'dashboard' */ './components/Dashboard.vue')
+const PusherList = () => import(/* webpackChunkName: 'pushers' */ './components/PusherList.vue')
+const PlayerList = () => import(/* webpackChunkName: 'players' */ './components/PlayerList.vue')
+const User = () => import(/* webpackChunkName: 'user' */ './components/User.vue')
+const About = () => import(/* webpackChunkName: 'about' */ './components/About.vue')
 
 Vue.use(Router);
 
