@@ -645,7 +645,7 @@ func (client *RTSPClient) RequestWithPath(method string, path string, headers ma
 
 	}
 	if client.Stoped {
-		err = fmt.Errorf("Client Stoped.")
+		err = fmt.Errorf("Client Stopped.")
 	}
 	return
 }
