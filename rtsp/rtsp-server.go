@@ -28,7 +28,7 @@ type Server struct {
 }
 
 var Instance *Server = &Server{
-	SessionLogger:  SessionLogger{log.New(os.Stdout, "[RTSPServer]", log.LstdFlags|log.Lshortfile)},
+	SessionLogger:  SessionLogger{log.New(os.Stdout, "[RTSPServer] ", log.LstdFlags|log.Lshortfile)},
 	Stopped:        true,
 	TCPPort:        utils.Conf().Section("rtsp").Key("port").MustInt(554),
 	pushers:        make(map[string]*Pusher),
