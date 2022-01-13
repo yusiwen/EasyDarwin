@@ -74,7 +74,7 @@
 </template>
 
 <script>
-import PullRTSPDlg from "components/PullRTSPDlg.vue"
+import PullRTSPDlg from "./PullRTSPDlg.vue"
 import prettyBytes from "pretty-bytes";
 
 import _ from "lodash";
