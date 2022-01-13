@@ -3,6 +3,7 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const webpack = require('webpack');
 const path = require('path');
 
@@ -159,11 +160,12 @@ if (process.env.NODE_ENV === "production") {
             cssProcessorOptions: { discardComments: { removeAll: true } },
             canPrint: true
         }),         
-        new webpack.optimize.UglifyJsPlugin({
-            comments: false,
-            compress: {
-              warnings: false
-            }
+        new UglifyJsPlugin({
+            uglifyOptions: {
+                output: {
+                    comments: false,
+                },
+            },
         })
     ])
 }
