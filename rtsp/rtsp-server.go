@@ -20,7 +20,7 @@ type Server struct {
 	SessionLogger
 	TCPListener    *net.TCPListener
 	TCPPort        int
-	Stoped         bool
+	Stopped        bool
 	pushers        map[string]*Pusher // Path <-> Pusher
 	pushersLock    sync.RWMutex
 	addPusherCh    chan *Pusher
@@ -29,7 +29,7 @@ type Server struct {
 
 var Instance *Server = &Server{
 	SessionLogger:  SessionLogger{log.New(os.Stdout, "[RTSPServer]", log.LstdFlags|log.Lshortfile)},
-	Stoped:         true,
+	Stopped:        true,
 	TCPPort:        utils.Conf().Section("rtsp").Key("port").MustInt(554),
 	pushers:        make(map[string]*Pusher),
 	addPusherCh:    make(chan *Pusher),
@@ -148,11 +148,11 @@ func (server *Server) Start() (err error) {
 		}
 	}()
 
-	server.Stoped = false
+	server.Stopped = false
 	server.TCPListener = listener
 	logger.Println("rtsp server start on", server.TCPPort)
 	networkBuffer := utils.Conf().Section("rtsp").Key("network_buffer").MustInt(1048576)
-	for !server.Stoped {
+	for !server.Stopped {
 		var (
 			conn net.Conn
 		)
@@ -178,7 +178,7 @@ func (server *Server) Start() (err error) {
 func (server *Server) Stop() {
 	logger := server.logger
 	logger.Println("rtsp server stop on", server.TCPPort)
-	server.Stoped = true
+	server.Stopped = true
 	if server.TCPListener != nil {
 		server.TCPListener.Close()
 		server.TCPListener = nil
