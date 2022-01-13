@@ -119,7 +119,7 @@ func Init() (err error) {
 	sessionHandle := sessions.Sessions("token", store)
 
 	{
-		wwwDir := filepath.Join(utils.DataDir(), "www")
+		wwwDir := filepath.Join(utils.DataDir(), "www/dist")
 		Router.Use(static.Serve("/", static.LocalFile(wwwDir, true)))
 	}
 
