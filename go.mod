@@ -7,6 +7,7 @@ require (
 	github.com/MeloQi/service v0.0.0-20191030061151-7762127fe623
 	github.com/MeloQi/sessions v0.0.0-20191030032128-1c51e5f867b9
 	github.com/common-nighthawk/go-figure v0.0.0-20180619031829-18b2b544842c
+	github.com/elazarl/go-bindata-assetfs v1.0.1
 	github.com/gin-contrib/pprof v0.0.0-20180514151456-0ed7ffb6a189
 	github.com/gin-contrib/static v0.0.0-20180301030858-73da7037e716
 	github.com/gin-gonic/gin v1.3.0
