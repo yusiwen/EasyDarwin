@@ -1,5 +1,6 @@
 .vscode
 www/dist
+/bindata/*
 /easydarwin
 /EasyDarwin.exe
 /EasyDarwin.exe~

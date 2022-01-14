@@ -5,12 +5,12 @@ import (
 	"log"
 	"mime"
 	"net/http"
-	"path/filepath"
+	"strings"
 
 	"github.com/MeloQi/EasyGoLib/db"
-
 	"github.com/MeloQi/EasyGoLib/utils"
 	"github.com/MeloQi/sessions"
+	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
@@ -103,7 +103,26 @@ func NeedLogin() gin.HandlerFunc {
 	}
 }
 
-func Init() (err error) {
+type binaryFileSystem struct {
+	fs http.FileSystem
+}
+
+func (b *binaryFileSystem) Open(name string) (http.File, error) {
+	return b.fs.Open(name)
+}
+
+func (b *binaryFileSystem) Exists(prefix string, filepath string) bool {
+
+	if p := strings.TrimPrefix(filepath, prefix); len(p) < len(filepath) {
+		if _, err := b.fs.Open(p); err != nil {
+			return false
+		}
+		return true
+	}
+	return false
+}
+
+func Init(assetFS *assetfs.AssetFS) (err error) {
 	Router = gin.New()
 	pprof.Register(Router)
 	// Router.Use(gin.Logger())
@@ -119,8 +138,10 @@ func Init() (err error) {
 	sessionHandle := sessions.Sessions("token", store)
 
 	{
-		wwwDir := filepath.Join(utils.DataDir(), "www/dist")
-		Router.Use(static.Serve("/", static.LocalFile(wwwDir, true)))
+		fs := binaryFileSystem{
+			assetFS,
+		}
+		Router.Use(static.Serve("/", &fs))
 	}
 
 	{
@@ -144,12 +165,10 @@ func Init() (err error) {
 	}
 
 	{
-
 		mp4Path := utils.Conf().Section("rtsp").Key("m3u8_dir_path").MustString("")
 		if len(mp4Path) != 0 {
 			Router.Use(static.Serve("/record", static.LocalFile(mp4Path, true)))
 		}
-
 	}
 
 	return
