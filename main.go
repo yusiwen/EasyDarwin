@@ -1,3 +1,5 @@
+//go:generate go-bindata-assetfs -o bindata/bindata.go -pkg bindata -prefix www/dist www/dist/...
+
 package main
 
 import (
@@ -9,14 +11,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/MeloQi/EasyGoLib/db"
-
+	"github.com/EasyDarwin/EasyDarwin/bindata"
 	"github.com/EasyDarwin/EasyDarwin/models"
 	"github.com/EasyDarwin/EasyDarwin/routers"
 	"github.com/EasyDarwin/EasyDarwin/rtsp"
+	"github.com/MeloQi/EasyGoLib/db"
 	"github.com/MeloQi/EasyGoLib/utils"
 	"github.com/MeloQi/service"
 	figure "github.com/common-nighthawk/go-figure"
+	assetfs "github.com/elazarl/go-bindata-assetfs"
 )
 
 var (
@@ -104,7 +107,14 @@ func (p *program) Start(s service.Service) (err error) {
 	if err != nil {
 		return
 	}
-	err = routers.Init()
+
+	staticFS := assetfs.AssetFS{
+		Asset:     bindata.Asset,
+		AssetDir:  bindata.AssetDir,
+		AssetInfo: bindata.AssetInfo,
+		Prefix:    "/",
+	}
+	err = routers.Init(&staticFS)
 	if err != nil {
 		return
 	}
