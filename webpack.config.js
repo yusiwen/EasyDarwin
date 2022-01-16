@@ -13,8 +13,8 @@ function resolve(dir) {
 
 module.exports = {
     entry: {
-        "index": ['babel-polyfill', resolve('src/index.js')],
-        "login": ['babel-polyfill', resolve('src/login.js')]
+        "index": ['babel-polyfill', resolve('web_src/index.js')],
+        "login": ['babel-polyfill', resolve('web_src/login.js')]
     },
     output: {
         path: resolve('dist'),
@@ -119,9 +119,9 @@ module.exports = {
         }),
         new webpack.HashedModuleIdsPlugin(),
         new CopyWebpackPlugin([
-            { from: 'src/assets/js/jquery-2.2.4.js', to: 'js/' },
-            { from: 'src/assets/crossdomain.xml' },
-            { from: 'src/assets/favicon.ico' },
+            { from: 'web_src/assets/js/jquery-2.2.4.js', to: 'js/' },
+            { from: 'web_src/assets/crossdomain.xml' },
+            { from: 'web_src/assets/favicon.ico' },
             { from: 'node_modules/easy-player/dist/component/easy-player-lib.min.js', to: 'js/'},
             { from: 'node_modules/easy-player/dist/component/easy-player-fluent.swf'},
             { from: 'node_modules/easy-player/dist/component/easy-player.swf'}
@@ -132,14 +132,14 @@ module.exports = {
             title: 'EasyDarwin 登录',
             inject: true,
             chunks: ['login'],
-            template: './template-login.html'
+            template: 'web_src/template-login.html'
         }),        
         new HtmlWebpackPlugin({
             filename: 'index.html',
             title: 'EasyDarwin',
             inject: true, // head -> Cannot find element: #app
             chunks: ['index'],
-            template: './template.html'
+            template: 'web_src/template.html'
         })
     ]
 };

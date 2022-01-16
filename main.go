@@ -1,4 +1,4 @@
-//go:generate go-bindata-assetfs -o bindata/bindata.go -pkg bindata -prefix www/dist www/dist/...
+//go:generate go-bindata-assetfs -o bindata.go -prefix dist dist/...
 
 package main
 
@@ -11,7 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/EasyDarwin/EasyDarwin/bindata"
 	"github.com/EasyDarwin/EasyDarwin/models"
 	"github.com/EasyDarwin/EasyDarwin/routers"
 	"github.com/EasyDarwin/EasyDarwin/rtsp"
@@ -109,9 +108,9 @@ func (p *program) Start(s service.Service) (err error) {
 	}
 
 	staticFS := assetfs.AssetFS{
-		Asset:     bindata.Asset,
-		AssetDir:  bindata.AssetDir,
-		AssetInfo: bindata.AssetInfo,
+		Asset:     Asset,
+		AssetDir:  AssetDir,
+		AssetInfo: AssetInfo,
 		Prefix:    "/",
 	}
 	err = routers.Init(&staticFS)

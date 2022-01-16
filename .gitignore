@@ -1,6 +1,6 @@
 .vscode
-www/dist
-/bindata/*
+dist
+/bindata.go
 /easydarwin
 /EasyDarwin.exe
 /EasyDarwin.exe~
@@ -15,6 +15,7 @@ node_modules
 /*.dev.db
 .idea
 easydarwin_debug.ini
+EasyDarwin_windows.syso
 .DS_Store
 Unnamed
 dev.ini
