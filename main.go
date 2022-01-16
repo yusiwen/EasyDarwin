@@ -1,5 +1,4 @@
 //go:generate go-bindata-assetfs -o bindata.go -prefix dist dist/...
-
 package main
 
 import (
