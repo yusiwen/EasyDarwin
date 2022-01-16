@@ -1,5 +1,13 @@
 # EasyDarwin开源流媒体服务器
 
+## Mod by yusiwen
+
+2022-01-05:
+
+- Adjust project structure for web source
+- Adjust project build script
+- Remove unused files
+- Shrink git repo from 600MB to 60MB by remove large old history files 
 
 ## 主要功能特点
 
