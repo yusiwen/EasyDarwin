@@ -9,7 +9,8 @@
 - Upgrade web source dependencies
 - Adjust project build scripts
 - Remove unused files
-- Shrink git repo from 600MB to 60MB by remove large old history files 
+- Shrink git repo from 600MB to 60MB by remove large old history files
+- Make single executable binary using go-bindata
 
 ## 主要功能特点
 
