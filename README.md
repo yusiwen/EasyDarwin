@@ -4,8 +4,10 @@
 
 2022-01-05:
 
-- Adjust project structure for web source
-- Adjust project build script
+- Fix build by updating old invalid go modules
+- Adjust project structures for web source
+- Upgrade web source dependencies
+- Adjust project build scripts
 - Remove unused files
 - Shrink git repo from 600MB to 60MB by remove large old history files 
 
