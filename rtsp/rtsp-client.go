@@ -415,7 +415,7 @@ func (client *RTSPClient) startStream() {
 					Buffer: rtpBuf,
 				}
 			default:
-				client.logger.Printf("unknow rtp pack type, channel:%v", channel)
+				client.logger.Printf("unknown rtp pack type, channel:%v", channel)
 				continue
 			}
 

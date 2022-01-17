@@ -43,7 +43,7 @@ func (st SessionType) String() string {
 	case SESSEION_TYPE_PLAYER:
 		return "player"
 	}
-	return "unknow"
+	return "unknown"
 }
 
 type RTPType int
@@ -66,7 +66,7 @@ func (rt RTPType) String() string {
 	case RTP_TYPE_VIDEOCONTROL:
 		return "video control"
 	}
-	return "unknow"
+	return "unknown"
 }
 
 type TransType int
@@ -83,7 +83,7 @@ func (tt TransType) String() string {
 	case TRANS_TYPE_UDP:
 		return "UDP"
 	}
-	return "unknow"
+	return "unknown"
 }
 
 const UDP_BUF_SIZE = 1048576
@@ -249,7 +249,7 @@ func (session *Session) Start() {
 					Buffer: rtpBuf,
 				}
 			default:
-				logger.Printf("unknow rtp pack type, %v", channel)
+				logger.Printf("unknown rtp pack type, %v", channel)
 				continue
 			}
 			session.InBytes += rtpLen + 4
