@@ -10,7 +10,6 @@ import (
 
 type UDPClient struct {
 	*Session
-
 	APort        int
 	AConn        *net.UDPConn
 	AControlPort int
@@ -19,15 +18,14 @@ type UDPClient struct {
 	VConn        *net.UDPConn
 	VControlPort int
 	VControlConn *net.UDPConn
-
-	Stoped bool
+	Stopped      bool
 }
 
 func (s *UDPClient) Stop() {
-	if s.Stoped {
+	if s.Stopped {
 		return
 	}
-	s.Stoped = true
+	s.Stopped = true
 	if s.AConn != nil {
 		s.AConn.Close()
 		s.AConn = nil
