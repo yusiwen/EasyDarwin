@@ -44,9 +44,9 @@ func (pusher *Pusher) SDPRaw() string {
 	return pusher.RTSPClient.SDPRaw
 }
 
-func (pusher *Pusher) Stoped() bool {
+func (pusher *Pusher) Stopped() bool {
 	if pusher.Session != nil {
-		return pusher.Session.Stoped
+		return pusher.Session.Stopped
 	}
 	return pusher.RTSPClient.Stopped
 }
@@ -255,7 +255,7 @@ func (pusher *Pusher) QueueRTP(pack *RTPPack) *Pusher {
 
 func (pusher *Pusher) Start() {
 	logger := pusher.Logger()
-	for !pusher.Stoped() {
+	for !pusher.Stopped() {
 		var pack *RTPPack
 		pusher.cond.L.Lock()
 		if len(pusher.queue) == 0 {
@@ -267,8 +267,8 @@ func (pusher *Pusher) Start() {
 		}
 		pusher.cond.L.Unlock()
 		if pack == nil {
-			if !pusher.Stoped() {
-				logger.Printf("pusher not stoped, but queue take out nil pack")
+			if !pusher.Stopped() {
+				logger.Printf("pusher not stopped, but queue take out nil pack")
 			}
 			continue
 		}

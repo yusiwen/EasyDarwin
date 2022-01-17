@@ -118,7 +118,7 @@ type Session struct {
 	StartAt  time.Time
 	Timeout  int
 
-	Stoped bool
+	Stopped bool
 
 	//tcp channels
 	aRTPChannel        int
@@ -170,10 +170,10 @@ func NewSession(server *Server, conn net.Conn) *Session {
 }
 
 func (session *Session) Stop() {
-	if session.Stoped {
+	if session.Stopped {
 		return
 	}
-	session.Stoped = true
+	session.Stopped = true
 	for _, h := range session.StopHandles {
 		h()
 	}
@@ -194,7 +194,7 @@ func (session *Session) Start() {
 	buf2 := make([]byte, 2)
 	logger := session.logger
 	timer := time.Unix(0, 0)
-	for !session.Stoped {
+	for !session.Stopped {
 		if _, err := io.ReadFull(session.connRW, buf1); err != nil {
 			logger.Println(session, err)
 			return
@@ -259,7 +259,7 @@ func (session *Session) Start() {
 		} else { // rtsp cmd
 			reqBuf := bytes.NewBuffer(nil)
 			reqBuf.Write(buf1)
-			for !session.Stoped {
+			for !session.Stopped {
 				if line, isPrefix, err := session.connRW.ReadLine(); err != nil {
 					logger.Println(err)
 					return

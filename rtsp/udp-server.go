@@ -25,7 +25,7 @@ type UDPServer struct {
 	VControlPort int
 	VControlConn *net.UDPConn
 
-	Stoped bool
+	Stopped bool
 }
 
 func (s *UDPServer) AddInputBytes(bytes int) {
@@ -68,10 +68,10 @@ func (s *UDPServer) Logger() *log.Logger {
 }
 
 func (s *UDPServer) Stop() {
-	if s.Stoped {
+	if s.Stopped {
 		return
 	}
-	s.Stoped = true
+	s.Stopped = true
 	if s.AConn != nil {
 		s.AConn.Close()
 		s.AConn = nil
@@ -119,7 +119,7 @@ func (s *UDPServer) SetupAudio() (err error) {
 		logger.Printf("udp server start listen audio port[%d]", s.APort)
 		defer logger.Printf("udp server stop listen audio port[%d]", s.APort)
 		timer := time.Unix(0, 0)
-		for !s.Stoped {
+		for !s.Stopped {
 			if n, _, err := s.AConn.ReadFromUDP(bufUDP); err == nil {
 				elapsed := time.Now().Sub(timer)
 				if elapsed >= 30*time.Second {
@@ -164,7 +164,7 @@ func (s *UDPServer) SetupAudio() (err error) {
 		bufUDP := make([]byte, UdpBufSize)
 		logger.Printf("udp server start listen audio control port[%d]", s.AControlPort)
 		defer logger.Printf("udp server stop listen audio control port[%d]", s.AControlPort)
-		for !s.Stoped {
+		for !s.Stopped {
 			if n, _, err := s.AControlConn.ReadFromUDP(bufUDP); err == nil {
 				//logger.Printf("Package recv from AControlConn.len:%d\n", n)
 				rtpBytes := make([]byte, n)
@@ -215,7 +215,7 @@ func (s *UDPServer) SetupVideo() (err error) {
 		logger.Printf("udp server start listen video port[%d]", s.VPort)
 		defer logger.Printf("udp server stop listen video port[%d]", s.VPort)
 		timer := time.Unix(0, 0)
-		for !s.Stoped {
+		for !s.Stopped {
 			var n int
 			if n, _, err = s.VConn.ReadFromUDP(bufUDP); err == nil {
 				elapsed := time.Now().Sub(timer)
@@ -262,7 +262,7 @@ func (s *UDPServer) SetupVideo() (err error) {
 		bufUDP := make([]byte, UdpBufSize)
 		logger.Printf("udp server start listen video control port[%d]", s.VControlPort)
 		defer logger.Printf("udp server stop listen video control port[%d]", s.VControlPort)
-		for !s.Stoped {
+		for !s.Stopped {
 			var n int
 			if n, _, err = s.VControlConn.ReadFromUDP(bufUDP); err == nil {
 				//logger.Printf("Package recv from VControlConn.len:%d\n", n)

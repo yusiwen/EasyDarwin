@@ -61,7 +61,7 @@ func (player *Player) QueueRTP(pack *RTPPack) *Player {
 func (player *Player) Start() {
 	logger := player.logger
 	timer := time.Unix(0, 0)
-	for !player.Stoped {
+	for !player.Stopped {
 		var pack *RTPPack
 		player.cond.L.Lock()
 		if len(player.queue) == 0 {
@@ -77,7 +77,7 @@ func (player *Player) Start() {
 			continue
 		}
 		if pack == nil {
-			if !player.Stoped {
+			if !player.Stopped {
 				logger.Printf("player not stopped, but queue take out nil pack")
 			}
 			continue
