@@ -45,11 +45,11 @@ func init() {
 		for {
 			select {
 			case <-ticker.C:
-				mem, _ := mem.VirtualMemory()
-				cpu, _ := cpu.Percent(0, false)
+				memStat, _ := mem.VirtualMemory()
+				cpuStat, _ := cpu.Percent(0, false)
 				now := utils.DateTime(time.Now())
-				memData = append(memData, PercentData{Time: now, Used: mem.UsedPercent / 100})
-				cpuData = append(cpuData, PercentData{Time: now, Used: cpu[0] / 100})
+				memData = append(memData, PercentData{Time: now, Used: memStat.UsedPercent / 100})
+				cpuData = append(cpuData, PercentData{Time: now, Used: cpuStat[0] / 100})
 				pusherData = append(pusherData, CountData{Time: now, Total: uint(rtsp.Instance.GetPusherSize())})
 				playerCnt := 0
 				for _, pusher := range rtsp.Instance.GetPushers() {

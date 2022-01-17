@@ -51,16 +51,16 @@ func (h *APIHandler) Pushers(c *gin.Context) {
 	pushers := make([]interface{}, 0)
 	for _, pusher := range rtsp.Instance.GetPushers() {
 		port := pusher.Server().TCPPort
-		rtsp := fmt.Sprintf("rtsp://%s:%d%s", hostname, port, pusher.Path())
+		rtspUrl := fmt.Sprintf("rtsp://%s:%d%s", hostname, port, pusher.Path())
 		if port == 554 {
-			rtsp = fmt.Sprintf("rtsp://%s%s", hostname, pusher.Path())
+			rtspUrl = fmt.Sprintf("rtsp://%s%s", hostname, pusher.Path())
 		}
-		if form.Q != "" && !strings.Contains(strings.ToLower(rtsp), strings.ToLower(form.Q)) {
+		if form.Q != "" && !strings.Contains(strings.ToLower(rtspUrl), strings.ToLower(form.Q)) {
 			continue
 		}
 		pushers = append(pushers, map[string]interface{}{
 			"id":        pusher.ID(),
-			"url":       rtsp,
+			"url":       rtspUrl,
 			"path":      pusher.Path(),
 			"source":    pusher.Source(),
 			"transType": pusher.TransType(),
@@ -112,13 +112,13 @@ func (h *APIHandler) Players(c *gin.Context) {
 	for i := 0; i < len(players); i++ {
 		player := players[i]
 		port := player.Server.TCPPort
-		rtsp := fmt.Sprintf("rtsp://%s:%d%s", hostname, port, player.Path)
+		rtspUrl := fmt.Sprintf("rtsp://%s:%d%s", hostname, port, player.Path)
 		if port == 554 {
-			rtsp = fmt.Sprintf("rtsp://%s%s", hostname, player.Path)
+			rtspUrl = fmt.Sprintf("rtsp://%s%s", hostname, player.Path)
 		}
 		_players = append(_players, map[string]interface{}{
 			"id":        player.ID,
-			"path":      rtsp,
+			"path":      rtspUrl,
 			"transType": player.TransType.String(),
 			"inBytes":   player.InBytes,
 			"outBytes":  player.OutBytes,
