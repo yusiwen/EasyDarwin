@@ -101,7 +101,7 @@ func NewRTSPClient(server *Server, rawUrl string, sendOptionMillis int64, agent 
 func DigestAuth(authLine string, method string, URL string) (string, error) {
 	l, err := url.Parse(URL)
 	if err != nil {
-		return "", fmt.Errorf("Url parse error:%v,%v", URL, err)
+		return "", fmt.Errorf("url parse error:%v,%v", URL, err)
 	}
 	realm := ""
 	nonce := ""
@@ -459,7 +459,7 @@ func (client *RTSPClient) startStream() {
 						_, err = io.ReadFull(client.connRW, content)
 						if err != nil {
 							if !client.Stopped {
-								err = fmt.Errorf("Read content err.ContentLength:%d", contentLen)
+								err = fmt.Errorf("read content err.ContentLength:%d", contentLen)
 							}
 							return
 						}
@@ -579,7 +579,7 @@ func (client *RTSPClient) RequestWithPath(method string, path string, headers ma
 				content := make([]byte, contentLen)
 				_, err = io.ReadFull(client.connRW, content)
 				if err != nil {
-					err = fmt.Errorf("Read content err.ContentLength:%d", contentLen)
+					err = fmt.Errorf("read content err.ContentLength:%d", contentLen)
 					return
 				}
 				body = string(content)
@@ -590,7 +590,7 @@ func (client *RTSPClient) RequestWithPath(method string, path string, headers ma
 			logger.Printf("<<<[IN]\n%s", builder.String())
 
 			if !(statusCode >= 200 && statusCode <= 300) {
-				err = fmt.Errorf("Response StatusCode is :%d", statusCode)
+				err = fmt.Errorf("response StatusCode is :%d", statusCode)
 				return
 			}
 			return
@@ -645,7 +645,7 @@ func (client *RTSPClient) RequestWithPath(method string, path string, headers ma
 
 	}
 	if client.Stopped {
-		err = fmt.Errorf("Client Stopped.")
+		err = fmt.Errorf("client Stopped")
 	}
 	return
 }
@@ -653,7 +653,7 @@ func (client *RTSPClient) RequestWithPath(method string, path string, headers ma
 func (client *RTSPClient) Request(method string, headers map[string]string) (*Response, error) {
 	l, err := url.Parse(client.URL)
 	if err != nil {
-		return nil, fmt.Errorf("Url parse error:%v", err)
+		return nil, fmt.Errorf("url parse error:%v", err)
 	}
 	l.User = nil
 	return client.RequestWithPath(method, l.String(), headers, true)
@@ -664,7 +664,7 @@ func (client *RTSPClient) RequestNoResp(method string, headers map[string]string
 		l *url.URL
 	)
 	if l, err = url.Parse(client.URL); err != nil {
-		return fmt.Errorf("Url parse error:%v", err)
+		return fmt.Errorf("url parse error:%v", err)
 	}
 	l.User = nil
 	if _, err = client.RequestWithPath(method, l.String(), headers, false); err != nil {

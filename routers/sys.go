@@ -31,10 +31,10 @@ var API = &APIHandler{
 }
 
 var (
-	memData    []PercentData = make([]PercentData, 0)
-	cpuData    []PercentData = make([]PercentData, 0)
-	pusherData []CountData   = make([]CountData, 0)
-	playerData []CountData   = make([]CountData, 0)
+	memData    = make([]PercentData, 0)
+	cpuData    = make([]PercentData, 0)
+	pusherData = make([]CountData, 0)
+	playerData = make([]CountData, 0)
 )
 
 func init() {

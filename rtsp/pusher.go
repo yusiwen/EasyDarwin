@@ -369,7 +369,7 @@ func (pusher *Pusher) shouldSequenceStart(rtp *RTPInfo) bool {
 	if strings.EqualFold(pusher.VCodec(), "h264") {
 		var realNALU uint8
 		payloadHeader := rtp.Payload[0] //https://tools.ietf.org/html/rfc6184#section-5.2
-		NaluType := uint8(payloadHeader & 0x1F)
+		NaluType := payloadHeader & 0x1F
 		// log.Printf("RTP Type:%d", NaluType)
 		switch {
 		case NaluType <= 23:

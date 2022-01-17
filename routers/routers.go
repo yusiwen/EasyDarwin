@@ -15,7 +15,7 @@ import (
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/penggy/cors"
-	validator "gopkg.in/go-playground/validator.v8"
+	"gopkg.in/go-playground/validator.v8"
 )
 
 /**

@@ -27,7 +27,7 @@ type Server struct {
 	removePusherCh chan *Pusher
 }
 
-var Instance *Server = &Server{
+var Instance = &Server{
 	SessionLogger:  SessionLogger{log.New(os.Stdout, "[RTSPServer] ", log.LstdFlags|log.Lshortfile)},
 	Stopped:        true,
 	TCPPort:        utils.Conf().Section("rtsp").Key("port").MustInt(554),

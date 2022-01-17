@@ -16,7 +16,7 @@ import (
 	"github.com/MeloQi/EasyGoLib/db"
 	"github.com/MeloQi/EasyGoLib/utils"
 	"github.com/MeloQi/service"
-	figure "github.com/common-nighthawk/go-figure"
+	"github.com/common-nighthawk/go-figure"
 	assetfs "github.com/elazarl/go-bindata-assetfs"
 )
 
