@@ -44,96 +44,96 @@ func (s *UDPClient) Stop() {
 	}
 }
 
-func (c *UDPClient) SetupAudio() (err error) {
+func (s *UDPClient) SetupAudio() (err error) {
 	var (
-		logger = c.logger
+		logger = s.logger
 		addr   *net.UDPAddr
 	)
 	defer func() {
 		if err != nil {
 			logger.Println(err)
-			c.Stop()
+			s.Stop()
 		}
 	}()
-	host := c.Conn.RemoteAddr().String()
+	host := s.Conn.RemoteAddr().String()
 	host = host[:strings.LastIndex(host, ":")]
-	if addr, err = net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", host, c.APort)); err != nil {
+	if addr, err = net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", host, s.APort)); err != nil {
 		return
 	}
-	c.AConn, err = net.DialUDP("udp", nil, addr)
+	s.AConn, err = net.DialUDP("udp", nil, addr)
 	if err != nil {
 		return
 	}
 	networkBuffer := utils.Conf().Section("rtsp").Key("network_buffer").MustInt(1048576)
-	if err = c.AConn.SetReadBuffer(networkBuffer); err != nil {
+	if err = s.AConn.SetReadBuffer(networkBuffer); err != nil {
 		logger.Printf("udp client audio conn set read buffer error, %v", err)
 	}
-	if err = c.AConn.SetWriteBuffer(networkBuffer); err != nil {
+	if err = s.AConn.SetWriteBuffer(networkBuffer); err != nil {
 		logger.Printf("udp client audio conn set write buffer error, %v", err)
 	}
 
-	addr, err = net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", host, c.AControlPort))
+	addr, err = net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", host, s.AControlPort))
 	if err != nil {
 		return
 	}
-	c.AControlConn, err = net.DialUDP("udp", nil, addr)
+	s.AControlConn, err = net.DialUDP("udp", nil, addr)
 	if err != nil {
 		return
 	}
-	if err = c.AControlConn.SetReadBuffer(networkBuffer); err != nil {
+	if err = s.AControlConn.SetReadBuffer(networkBuffer); err != nil {
 		logger.Printf("udp client audio control conn set read buffer error, %v", err)
 	}
-	if err = c.AControlConn.SetWriteBuffer(networkBuffer); err != nil {
+	if err = s.AControlConn.SetWriteBuffer(networkBuffer); err != nil {
 		logger.Printf("udp client audio control conn set write buffer error, %v", err)
 	}
 	return
 }
 
-func (c *UDPClient) SetupVideo() (err error) {
+func (s *UDPClient) SetupVideo() (err error) {
 	var (
-		logger = c.logger
+		logger = s.logger
 		addr   *net.UDPAddr
 	)
 	defer func() {
 		if err != nil {
 			logger.Println(err)
-			c.Stop()
+			s.Stop()
 		}
 	}()
-	host := c.Conn.RemoteAddr().String()
+	host := s.Conn.RemoteAddr().String()
 	host = host[:strings.LastIndex(host, ":")]
-	if addr, err = net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", host, c.VPort)); err != nil {
+	if addr, err = net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", host, s.VPort)); err != nil {
 		return
 	}
-	if c.VConn, err = net.DialUDP("udp", nil, addr); err != nil {
+	if s.VConn, err = net.DialUDP("udp", nil, addr); err != nil {
 		return
 	}
 	networkBuffer := utils.Conf().Section("rtsp").Key("network_buffer").MustInt(1048576)
-	if err = c.VConn.SetReadBuffer(networkBuffer); err != nil {
+	if err = s.VConn.SetReadBuffer(networkBuffer); err != nil {
 		logger.Printf("udp client video conn set read buffer error, %v", err)
 	}
-	if err = c.VConn.SetWriteBuffer(networkBuffer); err != nil {
+	if err = s.VConn.SetWriteBuffer(networkBuffer); err != nil {
 		logger.Printf("udp client video conn set write buffer error, %v", err)
 	}
 
-	addr, err = net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", host, c.VControlPort))
+	addr, err = net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", host, s.VControlPort))
 	if err != nil {
 		return
 	}
-	c.VControlConn, err = net.DialUDP("udp", nil, addr)
+	s.VControlConn, err = net.DialUDP("udp", nil, addr)
 	if err != nil {
 		return
 	}
-	if err = c.VControlConn.SetReadBuffer(networkBuffer); err != nil {
+	if err = s.VControlConn.SetReadBuffer(networkBuffer); err != nil {
 		logger.Printf("udp client video control conn set read buffer error, %v", err)
 	}
-	if err = c.VControlConn.SetWriteBuffer(networkBuffer); err != nil {
+	if err = s.VControlConn.SetWriteBuffer(networkBuffer); err != nil {
 		logger.Printf("udp client video control conn set write buffer error, %v", err)
 	}
 	return
 }
 
-func (c *UDPClient) SendRTP(pack *RTPPack) (err error) {
+func (s *UDPClient) SendRTP(pack *RTPPack) (err error) {
 	if pack == nil {
 		err = fmt.Errorf("udp client send rtp got nil pack")
 		return
@@ -141,13 +141,13 @@ func (c *UDPClient) SendRTP(pack *RTPPack) (err error) {
 	var conn *net.UDPConn
 	switch pack.Type {
 	case RtpTypeAudio:
-		conn = c.AConn
+		conn = s.AConn
 	case RtpTypeAudioControl:
-		conn = c.AControlConn
+		conn = s.AControlConn
 	case RtpTypeVideo:
-		conn = c.VConn
+		conn = s.VConn
 	case RtpTypeVideoControl:
-		conn = c.VControlConn
+		conn = s.VControlConn
 	default:
 		err = fmt.Errorf("udp client send rtp got unkown pack type[%v]", pack.Type)
 		return
@@ -162,6 +162,6 @@ func (c *UDPClient) SendRTP(pack *RTPPack) (err error) {
 		return
 	}
 	// logger.Printf("udp client write [%d/%d]", n, pack.Buffer.Len())
-	c.Session.OutBytes += n
+	s.Session.OutBytes += n
 	return
 }
