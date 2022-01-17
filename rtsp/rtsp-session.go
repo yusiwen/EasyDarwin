@@ -430,13 +430,13 @@ func (session *Session) handleRequest(req *Request) {
 		session.Type = SESSION_TYPE_PUSHER
 		session.URL = req.URL
 
-		url, err := url.Parse(req.URL)
+		reqUrl, err := url.Parse(req.URL)
 		if err != nil {
 			res.StatusCode = 500
 			res.Status = "Invalid URL"
 			return
 		}
-		session.Path = url.Path
+		session.Path = reqUrl.Path
 
 		session.SDPRaw = req.Body
 		session.SDPMap = ParseSDP(req.Body)
@@ -497,13 +497,13 @@ func (session *Session) handleRequest(req *Request) {
 		session.Type = SESSEION_TYPE_PLAYER
 		session.URL = req.URL
 
-		url, err := url.Parse(req.URL)
+		reqUrl, err := url.Parse(req.URL)
 		if err != nil {
 			res.StatusCode = 500
 			res.Status = "Invalid URL"
 			return
 		}
-		session.Path = url.Path
+		session.Path = reqUrl.Path
 		pusher := session.Server.GetPusher(session.Path)
 		if pusher == nil {
 			res.StatusCode = 404
