@@ -78,7 +78,7 @@ func (player *Player) Start() {
 		}
 		if pack == nil {
 			if !player.Stoped {
-				logger.Printf("player not stoped, but queue take out nil pack")
+				logger.Printf("player not stopped, but queue take out nil pack")
 			}
 			continue
 		}
