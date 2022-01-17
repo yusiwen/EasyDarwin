@@ -48,7 +48,7 @@ func (pusher *Pusher) Stoped() bool {
 	if pusher.Session != nil {
 		return pusher.Session.Stoped
 	}
-	return pusher.RTSPClient.Stoped
+	return pusher.RTSPClient.Stopped
 }
 
 func (pusher *Pusher) Path() string {

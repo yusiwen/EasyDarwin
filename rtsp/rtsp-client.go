@@ -26,7 +26,7 @@ import (
 type RTSPClient struct {
 	Server *Server
 	SessionLogger
-	Stoped               bool
+	Stopped              bool
 	Status               string
 	URL                  string
 	Path                 string
@@ -77,7 +77,7 @@ func NewRTSPClient(server *Server, rawUrl string, sendOptionMillis int64, agent 
 	debugLogEnable := utils.Conf().Section("rtsp").Key("debug_log_enable").MustInt(0)
 	client = &RTSPClient{
 		Server:               server,
-		Stoped:               false,
+		Stopped:              false,
 		URL:                  rawUrl,
 		ID:                   shortid.MustGenerate(),
 		Path:                 url.Path,
@@ -349,7 +349,7 @@ func (client *RTSPClient) startStream() {
 	startTime := time.Now()
 	loggerTime := time.Now().Add(-10 * time.Second)
 	defer client.Stop()
-	for !client.Stoped {
+	for !client.Stopped {
 		if client.OptionIntervalMillis > 0 {
 			if time.Since(startTime) > time.Duration(client.OptionIntervalMillis)*time.Millisecond {
 				startTime = time.Now()
@@ -363,7 +363,7 @@ func (client *RTSPClient) startStream() {
 		}
 		b, err := client.connRW.ReadByte()
 		if err != nil {
-			if !client.Stoped {
+			if !client.Stopped {
 				client.logger.Printf("client.connRW.ReadByte err:%v", err)
 			}
 			return
@@ -375,7 +375,7 @@ func (client *RTSPClient) startStream() {
 			_, err := io.ReadFull(client.connRW, header[1:])
 			if err != nil {
 
-				if !client.Stoped {
+				if !client.Stopped {
 					client.logger.Printf("io.ReadFull err:%v", err)
 				}
 				return
@@ -385,7 +385,7 @@ func (client *RTSPClient) startStream() {
 			content := make([]byte, length)
 			_, err = io.ReadFull(client.connRW, content)
 			if err != nil {
-				if !client.Stoped {
+				if !client.Stopped {
 					client.logger.Printf("io.ReadFull err:%v", err)
 				}
 				return
@@ -445,10 +445,10 @@ func (client *RTSPClient) startStream() {
 			builder := bytes.Buffer{}
 			builder.WriteByte(b)
 			contentLen := 0
-			for !client.Stoped {
+			for !client.Stopped {
 				line, prefix, err := client.connRW.ReadLine()
 				if err != nil {
-					if !client.Stoped {
+					if !client.Stopped {
 						client.logger.Printf("client.connRW.ReadLine err:%v", err)
 					}
 					return
@@ -458,7 +458,7 @@ func (client *RTSPClient) startStream() {
 						content := make([]byte, contentLen)
 						_, err = io.ReadFull(client.connRW, content)
 						if err != nil {
-							if !client.Stoped {
+							if !client.Stopped {
 								err = fmt.Errorf("Read content err.ContentLength:%d", contentLen)
 							}
 							return
@@ -478,7 +478,7 @@ func (client *RTSPClient) startStream() {
 					splits := strings.Split(s, ":")
 					contentLen, err = strconv.Atoi(strings.TrimSpace(splits[1]))
 					if err != nil {
-						if !client.Stoped {
+						if !client.Stopped {
 							client.logger.Printf("strconv.Atoi err:%v, str:%v", err, splits[1])
 						}
 						return
@@ -503,10 +503,10 @@ func (client *RTSPClient) Start(timeout time.Duration) (err error) {
 }
 
 func (client *RTSPClient) Stop() {
-	if client.Stoped {
+	if client.Stopped {
 		return
 	}
-	client.Stoped = true
+	client.Stopped = true
 	for _, h := range client.StopHandles {
 		h()
 	}
@@ -563,7 +563,7 @@ func (client *RTSPClient) RequestWithPath(method string, path string, headers ma
 	respHeader := make(map[string]interface{})
 	var line []byte
 	builder.Reset()
-	for !client.Stoped {
+	for !client.Stopped {
 		isPrefix := false
 		if line, isPrefix, err = client.connRW.ReadLine(); err != nil {
 			return
@@ -644,7 +644,7 @@ func (client *RTSPClient) RequestWithPath(method string, path string, headers ma
 		}
 
 	}
-	if client.Stoped {
+	if client.Stopped {
 		err = fmt.Errorf("Client Stopped.")
 	}
 	return
