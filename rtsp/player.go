@@ -49,8 +49,8 @@ func (player *Player) QueueRTP(pack *RTPPack) *Player {
 	if oldLen := len(player.queue); player.queueLimit > 0 && oldLen > player.queueLimit {
 		player.queue = player.queue[1:]
 		if player.debugLogEnable {
-			len := len(player.queue)
-			logger.Printf("Player %s, QueueRTP, exceeds limit(%d), drop %d old packets, current queue.len=%d\n", player.String(), player.queueLimit, oldLen-len, len)
+			queueLen := len(player.queue)
+			logger.Printf("Player %s, QueueRTP, exceeds limit(%d), drop %d old packets, current queue.len=%d\n", player.String(), player.queueLimit, oldLen-queueLen, queueLen)
 		}
 	}
 	player.cond.Signal()
