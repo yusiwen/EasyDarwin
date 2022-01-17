@@ -81,7 +81,7 @@ func NewRTSPClient(server *Server, rawUrl string, sendOptionMillis int64, agent 
 		URL:                  rawUrl,
 		ID:                   shortid.MustGenerate(),
 		Path:                 url.Path,
-		TransType:            TRANS_TYPE_TCP,
+		TransType:            TransTypeTcp,
 		vRTPChannel:          0,
 		vRTPControlChannel:   1,
 		aRTPChannel:          2,
@@ -275,7 +275,7 @@ func (client *RTSPClient) requestStream(timeout time.Duration) (err error) {
 				_url = strings.TrimRight(client.URL, "/") + "/" + strings.TrimLeft(client.VControl, "/")
 			}
 			headers = make(map[string]string)
-			if client.TransType == TRANS_TYPE_TCP {
+			if client.TransType == TransTypeTcp {
 				headers["Transport"] = fmt.Sprintf("RTP/AVP/TCP;unicast;interleaved=%d-%d", client.vRTPChannel, client.vRTPControlChannel)
 			} else {
 				if client.UDPServer == nil {
@@ -309,7 +309,7 @@ func (client *RTSPClient) requestStream(timeout time.Duration) (err error) {
 				_url = strings.TrimRight(client.URL, "/") + "/" + strings.TrimLeft(client.AControl, "/")
 			}
 			headers = make(map[string]string)
-			if client.TransType == TRANS_TYPE_TCP {
+			if client.TransType == TransTypeTcp {
 				headers["Transport"] = fmt.Sprintf("RTP/AVP/TCP;unicast;interleaved=%d-%d", client.aRTPChannel, client.aRTPControlChannel)
 			} else {
 				if client.UDPServer == nil {
@@ -396,22 +396,22 @@ func (client *RTSPClient) startStream() {
 			switch channel {
 			case client.aRTPChannel:
 				pack = &RTPPack{
-					Type:   RTP_TYPE_AUDIO,
+					Type:   RtpTypeAudio,
 					Buffer: rtpBuf,
 				}
 			case client.aRTPControlChannel:
 				pack = &RTPPack{
-					Type:   RTP_TYPE_AUDIOCONTROL,
+					Type:   RtpTypeAudioControl,
 					Buffer: rtpBuf,
 				}
 			case client.vRTPChannel:
 				pack = &RTPPack{
-					Type:   RTP_TYPE_VIDEO,
+					Type:   RtpTypeVideo,
 					Buffer: rtpBuf,
 				}
 			case client.vRTPControlChannel:
 				pack = &RTPPack{
-					Type:   RTP_TYPE_VIDEOCONTROL,
+					Type:   RtpTypeVideoControl,
 					Buffer: rtpBuf,
 				}
 			default:

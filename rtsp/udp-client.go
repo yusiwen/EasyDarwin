@@ -142,13 +142,13 @@ func (c *UDPClient) SendRTP(pack *RTPPack) (err error) {
 	}
 	var conn *net.UDPConn
 	switch pack.Type {
-	case RTP_TYPE_AUDIO:
+	case RtpTypeAudio:
 		conn = c.AConn
-	case RTP_TYPE_AUDIOCONTROL:
+	case RtpTypeAudioControl:
 		conn = c.AControlConn
-	case RTP_TYPE_VIDEO:
+	case RtpTypeVideo:
 		conn = c.VConn
-	case RTP_TYPE_VIDEOCONTROL:
+	case RtpTypeVideoControl:
 		conn = c.VControlConn
 	default:
 		err = fmt.Errorf("udp client send rtp got unkown pack type[%v]", pack.Type)

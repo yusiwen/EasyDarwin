@@ -58,11 +58,11 @@ func (h *APIHandler) StreamStart(c *gin.Context) {
 	client.CustomPath = form.CustomPath
 	switch strings.ToLower(form.TransType) {
 	case "udp":
-		client.TransType = rtsp.TRANS_TYPE_UDP
+		client.TransType = rtsp.TransTypeUdp
 	case "tcp":
 		fallthrough
 	default:
-		client.TransType = rtsp.TRANS_TYPE_TCP
+		client.TransType = rtsp.TransTypeTcp
 	}
 
 	pusher := rtsp.NewClientPusher(client)

@@ -273,7 +273,7 @@ func (pusher *Pusher) Start() {
 			continue
 		}
 
-		if pusher.gopCacheEnable && pack.Type == RTP_TYPE_VIDEO {
+		if pusher.gopCacheEnable && pack.Type == RtpTypeVideo {
 			pusher.gopCacheLock.Lock()
 			if rtp := ParseRTP(pack.Buffer.Bytes()); rtp != nil && pusher.shouldSequenceStart(rtp) {
 				pusher.gopCache = make([]*RTPPack, 0)

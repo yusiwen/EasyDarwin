@@ -115,7 +115,7 @@ func (s *UDPServer) SetupAudio() (err error) {
 		return
 	}
 	go func() {
-		bufUDP := make([]byte, UDP_BUF_SIZE)
+		bufUDP := make([]byte, UdpBufSize)
 		logger.Printf("udp server start listen audio port[%d]", s.APort)
 		defer logger.Printf("udp server stop listen audio port[%d]", s.APort)
 		timer := time.Unix(0, 0)
@@ -130,7 +130,7 @@ func (s *UDPServer) SetupAudio() (err error) {
 				s.AddInputBytes(n)
 				copy(rtpBytes, bufUDP)
 				pack := &RTPPack{
-					Type:   RTP_TYPE_AUDIO,
+					Type:   RtpTypeAudio,
 					Buffer: bytes.NewBuffer(rtpBytes),
 				}
 				s.HandleRTP(pack)
@@ -161,7 +161,7 @@ func (s *UDPServer) SetupAudio() (err error) {
 		return
 	}
 	go func() {
-		bufUDP := make([]byte, UDP_BUF_SIZE)
+		bufUDP := make([]byte, UdpBufSize)
 		logger.Printf("udp server start listen audio control port[%d]", s.AControlPort)
 		defer logger.Printf("udp server stop listen audio control port[%d]", s.AControlPort)
 		for !s.Stoped {
@@ -171,7 +171,7 @@ func (s *UDPServer) SetupAudio() (err error) {
 				s.AddInputBytes(n)
 				copy(rtpBytes, bufUDP)
 				pack := &RTPPack{
-					Type:   RTP_TYPE_AUDIOCONTROL,
+					Type:   RtpTypeAudioControl,
 					Buffer: bytes.NewBuffer(rtpBytes),
 				}
 				s.HandleRTP(pack)
@@ -211,7 +211,7 @@ func (s *UDPServer) SetupVideo() (err error) {
 		return
 	}
 	go func() {
-		bufUDP := make([]byte, UDP_BUF_SIZE)
+		bufUDP := make([]byte, UdpBufSize)
 		logger.Printf("udp server start listen video port[%d]", s.VPort)
 		defer logger.Printf("udp server stop listen video port[%d]", s.VPort)
 		timer := time.Unix(0, 0)
@@ -227,7 +227,7 @@ func (s *UDPServer) SetupVideo() (err error) {
 				s.AddInputBytes(n)
 				copy(rtpBytes, bufUDP)
 				pack := &RTPPack{
-					Type:   RTP_TYPE_VIDEO,
+					Type:   RtpTypeVideo,
 					Buffer: bytes.NewBuffer(rtpBytes),
 				}
 				s.HandleRTP(pack)
@@ -259,7 +259,7 @@ func (s *UDPServer) SetupVideo() (err error) {
 		return
 	}
 	go func() {
-		bufUDP := make([]byte, UDP_BUF_SIZE)
+		bufUDP := make([]byte, UdpBufSize)
 		logger.Printf("udp server start listen video control port[%d]", s.VControlPort)
 		defer logger.Printf("udp server stop listen video control port[%d]", s.VControlPort)
 		for !s.Stoped {
@@ -270,7 +270,7 @@ func (s *UDPServer) SetupVideo() (err error) {
 				s.AddInputBytes(n)
 				copy(rtpBytes, bufUDP)
 				pack := &RTPPack{
-					Type:   RTP_TYPE_VIDEOCONTROL,
+					Type:   RtpTypeVideoControl,
 					Buffer: bytes.NewBuffer(rtpBytes),
 				}
 				s.HandleRTP(pack)

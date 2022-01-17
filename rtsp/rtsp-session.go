@@ -32,15 +32,15 @@ type RTPPack struct {
 type SessionType int
 
 const (
-	SESSION_TYPE_PUSHER SessionType = iota
-	SESSEION_TYPE_PLAYER
+	SessionTypePusher SessionType = iota
+	SesseionTypePlayer
 )
 
 func (st SessionType) String() string {
 	switch st {
-	case SESSION_TYPE_PUSHER:
+	case SessionTypePusher:
 		return "pusher"
-	case SESSEION_TYPE_PLAYER:
+	case SesseionTypePlayer:
 		return "player"
 	}
 	return "unknown"
@@ -49,21 +49,21 @@ func (st SessionType) String() string {
 type RTPType int
 
 const (
-	RTP_TYPE_AUDIO RTPType = iota
-	RTP_TYPE_VIDEO
-	RTP_TYPE_AUDIOCONTROL
-	RTP_TYPE_VIDEOCONTROL
+	RtpTypeAudio RTPType = iota
+	RtpTypeVideo
+	RtpTypeAudioControl
+	RtpTypeVideoControl
 )
 
 func (rt RTPType) String() string {
 	switch rt {
-	case RTP_TYPE_AUDIO:
+	case RtpTypeAudio:
 		return "audio"
-	case RTP_TYPE_VIDEO:
+	case RtpTypeVideo:
 		return "video"
-	case RTP_TYPE_AUDIOCONTROL:
+	case RtpTypeAudioControl:
 		return "audio control"
-	case RTP_TYPE_VIDEOCONTROL:
+	case RtpTypeVideoControl:
 		return "video control"
 	}
 	return "unknown"
@@ -72,21 +72,21 @@ func (rt RTPType) String() string {
 type TransType int
 
 const (
-	TRANS_TYPE_TCP TransType = iota
-	TRANS_TYPE_UDP
+	TransTypeTcp TransType = iota
+	TransTypeUdp
 )
 
 func (tt TransType) String() string {
 	switch tt {
-	case TRANS_TYPE_TCP:
+	case TransTypeTcp:
 		return "TCP"
-	case TRANS_TYPE_UDP:
+	case TransTypeUdp:
 		return "UDP"
 	}
 	return "unknown"
 }
 
-const UDP_BUF_SIZE = 1048576
+const UdpBufSize = 1048576
 
 type Session struct {
 	SessionLogger
@@ -142,7 +142,7 @@ func NewSession(server *Server, conn net.Conn) *Session {
 	timeoutMillis := utils.Conf().Section("rtsp").Key("timeout").MustInt(0)
 	timeoutTCPConn := &RichConn{conn, time.Duration(timeoutMillis) * time.Millisecond}
 	authorizationEnable := utils.Conf().Section("rtsp").Key("authorization_enable").MustInt(0)
-	close_old := utils.Conf().Section("rtsp").Key("close_old").MustInt(0)
+	closeOld := utils.Conf().Section("rtsp").Key("close_old").MustInt(0)
 	debugLogEnable := utils.Conf().Section("rtsp").Key("debug_log_enable").MustInt(0)
 	session := &Session{
 		ID:                  shortid.MustGenerate(),
@@ -159,7 +159,7 @@ func NewSession(server *Server, conn net.Conn) *Session {
 		vRTPControlChannel:  -1,
 		aRTPChannel:         -1,
 		aRTPControlChannel:  -1,
-		closeOld:            close_old != 0,
+		closeOld:            closeOld != 0,
 	}
 
 	session.logger = log.New(os.Stdout, fmt.Sprintf("[%s]", session.ID), log.LstdFlags|log.Lshortfile)
@@ -220,7 +220,7 @@ func (session *Session) Start() {
 			switch channel {
 			case session.aRTPChannel:
 				pack = &RTPPack{
-					Type:   RTP_TYPE_AUDIO,
+					Type:   RtpTypeAudio,
 					Buffer: rtpBuf,
 				}
 				elapsed := time.Now().Sub(timer)
@@ -230,12 +230,12 @@ func (session *Session) Start() {
 				}
 			case session.aRTPControlChannel:
 				pack = &RTPPack{
-					Type:   RTP_TYPE_AUDIOCONTROL,
+					Type:   RtpTypeAudioControl,
 					Buffer: rtpBuf,
 				}
 			case session.vRTPChannel:
 				pack = &RTPPack{
-					Type:   RTP_TYPE_VIDEO,
+					Type:   RtpTypeVideo,
 					Buffer: rtpBuf,
 				}
 				elapsed := time.Now().Sub(timer)
@@ -245,7 +245,7 @@ func (session *Session) Start() {
 				}
 			case session.vRTPControlChannel:
 				pack = &RTPPack{
-					Type:   RTP_TYPE_VIDEOCONTROL,
+					Type:   RtpTypeVideoControl,
 					Buffer: rtpBuf,
 				}
 			default:
@@ -381,7 +381,7 @@ func (session *Session) handleRequest(req *Request) {
 		switch req.Method {
 		case "PLAY", "RECORD":
 			switch session.Type {
-			case SESSEION_TYPE_PLAYER:
+			case SesseionTypePlayer:
 				if session.Pusher.HasPlayer(session.Player) {
 					session.Player.Pause(false)
 				} else {
@@ -427,7 +427,7 @@ func (session *Session) handleRequest(req *Request) {
 	case "OPTIONS":
 		res.Header["Public"] = "DESCRIBE, SETUP, TEARDOWN, PLAY, PAUSE, OPTIONS, ANNOUNCE, RECORD"
 	case "ANNOUNCE":
-		session.Type = SESSION_TYPE_PUSHER
+		session.Type = SessionTypePusher
 		session.URL = req.URL
 
 		reqUrl, err := url.Parse(req.URL)
@@ -494,7 +494,7 @@ func (session *Session) handleRequest(req *Request) {
 			}
 		}
 	case "DESCRIBE":
-		session.Type = SESSEION_TYPE_PLAYER
+		session.Type = SesseionTypePlayer
 		session.URL = req.URL
 
 		reqUrl, err := url.Parse(req.URL)
@@ -581,7 +581,7 @@ func (session *Session) handleRequest(req *Request) {
 		mudp := regexp.MustCompile("client_port=(\\d+)(-(\\d+))?")
 
 		if tcpMatchs := mtcp.FindStringSubmatch(ts); tcpMatchs != nil {
-			session.TransType = TRANS_TYPE_TCP
+			session.TransType = TransTypeTcp
 			if setupPath == aPath || aPath != "" && strings.LastIndex(setupPath, aPath) == len(setupPath)-len(aPath) {
 				session.aRTPChannel, _ = strconv.Atoi(tcpMatchs[1])
 				session.aRTPControlChannel, _ = strconv.Atoi(tcpMatchs[3])
@@ -595,22 +595,22 @@ func (session *Session) handleRequest(req *Request) {
 			}
 			logger.Printf("Parse SETUP req.TRANSPORT:TCP.Session.Type:%d,control:%s, AControl:%s,VControl:%s", session.Type, setupPath, aPath, vPath)
 		} else if udpMatchs := mudp.FindStringSubmatch(ts); udpMatchs != nil {
-			session.TransType = TRANS_TYPE_UDP
+			session.TransType = TransTypeUdp
 			// no need for tcp timeout.
 			session.Conn.timeout = 0
-			if session.Type == SESSEION_TYPE_PLAYER && session.UDPClient == nil {
+			if session.Type == SesseionTypePlayer && session.UDPClient == nil {
 				session.UDPClient = &UDPClient{
 					Session: session,
 				}
 			}
-			if session.Type == SESSION_TYPE_PUSHER && session.Pusher.UDPServer == nil {
+			if session.Type == SessionTypePusher && session.Pusher.UDPServer == nil {
 				session.Pusher.UDPServer = &UDPServer{
 					Session: session,
 				}
 			}
 			logger.Printf("Parse SETUP req.TRANSPORT:UDP.Session.Type:%d,control:%s, AControl:%s,VControl:%s", session.Type, setupPath, aPath, vPath)
 			if setupPath == aPath || aPath != "" && strings.LastIndex(setupPath, aPath) == len(setupPath)-len(aPath) {
-				if session.Type == SESSEION_TYPE_PLAYER {
+				if session.Type == SesseionTypePlayer {
 					session.UDPClient.APort, _ = strconv.Atoi(udpMatchs[1])
 					session.UDPClient.AControlPort, _ = strconv.Atoi(udpMatchs[3])
 					if err := session.UDPClient.SetupAudio(); err != nil {
@@ -619,7 +619,7 @@ func (session *Session) handleRequest(req *Request) {
 						return
 					}
 				}
-				if session.Type == SESSION_TYPE_PUSHER {
+				if session.Type == SessionTypePusher {
 					if err := session.Pusher.UDPServer.SetupAudio(); err != nil {
 						res.StatusCode = 500
 						res.Status = fmt.Sprintf("udp server setup audio error, %v", err)
@@ -638,7 +638,7 @@ func (session *Session) handleRequest(req *Request) {
 					ts = strings.Join(tss, ";")
 				}
 			} else if setupPath == vPath || vPath != "" && strings.LastIndex(setupPath, vPath) == len(setupPath)-len(vPath) {
-				if session.Type == SESSEION_TYPE_PLAYER {
+				if session.Type == SesseionTypePlayer {
 					session.UDPClient.VPort, _ = strconv.Atoi(udpMatchs[1])
 					session.UDPClient.VControlPort, _ = strconv.Atoi(udpMatchs[3])
 					if err := session.UDPClient.SetupVideo(); err != nil {
@@ -648,7 +648,7 @@ func (session *Session) handleRequest(req *Request) {
 					}
 				}
 
-				if session.Type == SESSION_TYPE_PUSHER {
+				if session.Type == SessionTypePusher {
 					if err := session.Pusher.UDPServer.SetupVideo(); err != nil {
 						res.StatusCode = 500
 						res.Status = fmt.Sprintf("udp server setup video error, %v", err)
@@ -701,7 +701,7 @@ func (session *Session) SendRTP(pack *RTPPack) (err error) {
 		err = fmt.Errorf("player send rtp got nil pack")
 		return
 	}
-	if session.TransType == TRANS_TYPE_UDP {
+	if session.TransType == TransTypeUdp {
 		if session.UDPClient == nil {
 			err = fmt.Errorf("player use udp transport but udp client not found")
 			return
@@ -710,7 +710,7 @@ func (session *Session) SendRTP(pack *RTPPack) (err error) {
 		return
 	}
 	switch pack.Type {
-	case RTP_TYPE_AUDIO:
+	case RtpTypeAudio:
 		bufChannel := make([]byte, 2)
 		bufChannel[0] = 0x24
 		bufChannel[1] = byte(session.aRTPChannel)
@@ -723,7 +723,7 @@ func (session *Session) SendRTP(pack *RTPPack) (err error) {
 		session.connRW.Flush()
 		session.connWLock.Unlock()
 		session.OutBytes += pack.Buffer.Len() + 4
-	case RTP_TYPE_AUDIOCONTROL:
+	case RtpTypeAudioControl:
 		bufChannel := make([]byte, 2)
 		bufChannel[0] = 0x24
 		bufChannel[1] = byte(session.aRTPControlChannel)
@@ -736,7 +736,7 @@ func (session *Session) SendRTP(pack *RTPPack) (err error) {
 		session.connRW.Flush()
 		session.connWLock.Unlock()
 		session.OutBytes += pack.Buffer.Len() + 4
-	case RTP_TYPE_VIDEO:
+	case RtpTypeVideo:
 		bufChannel := make([]byte, 2)
 		bufChannel[0] = 0x24
 		bufChannel[1] = byte(session.vRTPChannel)
@@ -749,7 +749,7 @@ func (session *Session) SendRTP(pack *RTPPack) (err error) {
 		session.connRW.Flush()
 		session.connWLock.Unlock()
 		session.OutBytes += pack.Buffer.Len() + 4
-	case RTP_TYPE_VIDEOCONTROL:
+	case RtpTypeVideoControl:
 		bufChannel := make([]byte, 2)
 		bufChannel[0] = 0x24
 		bufChannel[1] = byte(session.vRTPControlChannel)
