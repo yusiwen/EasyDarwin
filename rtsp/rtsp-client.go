@@ -70,7 +70,7 @@ func (client *RTSPClient) String() string {
 }
 
 func NewRTSPClient(server *Server, rawUrl string, sendOptionMillis int64, agent string) (client *RTSPClient, err error) {
-	url, err := url.Parse(rawUrl)
+	pullUrl, err := url.Parse(rawUrl)
 	if err != nil {
 		return
 	}
@@ -80,7 +80,7 @@ func NewRTSPClient(server *Server, rawUrl string, sendOptionMillis int64, agent 
 		Stopped:              false,
 		URL:                  rawUrl,
 		ID:                   shortid.MustGenerate(),
-		Path:                 url.Path,
+		Path:                 pullUrl.Path,
 		TransType:            TransTypeTcp,
 		vRTPChannel:          0,
 		vRTPControlChannel:   1,
