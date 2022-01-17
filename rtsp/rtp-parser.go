@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	RTP_FIXED_HEADER_LENGTH = 12
+	RtpFixedHeaderLength = 12
 )
 
 type RTPInfo struct {
@@ -23,7 +23,7 @@ type RTPInfo struct {
 }
 
 func ParseRTP(rtpBytes []byte) *RTPInfo {
-	if len(rtpBytes) < RTP_FIXED_HEADER_LENGTH {
+	if len(rtpBytes) < RtpFixedHeaderLength {
 		return nil
 	}
 	firstByte := rtpBytes[0]
@@ -40,7 +40,7 @@ func ParseRTP(rtpBytes []byte) *RTPInfo {
 		Timestamp:      int(binary.BigEndian.Uint32(rtpBytes[4:])),
 		SSRC:           int(binary.BigEndian.Uint32(rtpBytes[8:])),
 	}
-	offset := RTP_FIXED_HEADER_LENGTH
+	offset := RtpFixedHeaderLength
 	end := len(rtpBytes)
 	if end-offset >= 4*info.CSRCCnt {
 		offset += 4 * info.CSRCCnt

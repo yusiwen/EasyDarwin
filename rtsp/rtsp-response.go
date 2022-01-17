@@ -15,7 +15,7 @@ type Response struct {
 
 func NewResponse(statusCode int, status, cSeq, sid, body string) *Response {
 	res := &Response{
-		Version:    RTSP_VERSION,
+		Version:    RtspVersion,
 		StatusCode: statusCode,
 		Status:     status,
 		Header:     map[string]interface{}{"CSeq": cSeq, "Session": sid},

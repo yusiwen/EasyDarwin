@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	RTSP_VERSION = "RTSP/1.0"
+	RtspVersion = "RTSP/1.0"
 )
 
 const (

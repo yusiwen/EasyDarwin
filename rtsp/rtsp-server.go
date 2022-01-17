@@ -55,13 +55,13 @@ func (server *Server) Start() (err error) {
 
 	localRecord := utils.Conf().Section("rtsp").Key("save_stream_to_local").MustInt(0)
 	ffmpeg := utils.Conf().Section("rtsp").Key("ffmpeg_path").MustString("")
-	m3u8_dir_path := utils.Conf().Section("rtsp").Key("m3u8_dir_path").MustString("")
-	ts_duration_second := utils.Conf().Section("rtsp").Key("ts_duration_second").MustInt(6)
+	m3u8DirPath := utils.Conf().Section("rtsp").Key("m3u8_dir_path").MustString("")
+	tsDurationSecond := utils.Conf().Section("rtsp").Key("ts_duration_second").MustInt(6)
 	SaveStreamToLocal := false
-	if (len(ffmpeg) > 0) && localRecord > 0 && len(m3u8_dir_path) > 0 {
-		err = utils.EnsureDir(m3u8_dir_path)
+	if (len(ffmpeg) > 0) && localRecord > 0 && len(m3u8DirPath) > 0 {
+		err = utils.EnsureDir(m3u8DirPath)
 		if err != nil {
-			logger.Printf("Create m3u8_dir_path[%s] err:%v.", m3u8_dir_path, err)
+			logger.Printf("Create m3u8_dir_path[%s] err:%v.", m3u8DirPath, err)
 		} else {
 			SaveStreamToLocal = true
 		}
@@ -80,7 +80,7 @@ func (server *Server) Start() (err error) {
 			case pusher, addChnOk = <-server.addPusherCh:
 				if SaveStreamToLocal {
 					if addChnOk {
-						dir := path.Join(m3u8_dir_path, pusher.Path(), time.Now().Format("20060102"))
+						dir := path.Join(m3u8DirPath, pusher.Path(), time.Now().Format("20060102"))
 						err := utils.EnsureDir(dir)
 						if err != nil {
 							logger.Printf("EnsureDir:[%s] err:%v.", dir, err)
@@ -90,7 +90,7 @@ func (server *Server) Start() (err error) {
 						port := pusher.Server().TCPPort
 						rtsp := fmt.Sprintf("rtsp://localhost:%d%s", port, pusher.Path())
 						paramStr := utils.Conf().Section("rtsp").Key(pusher.Path()).MustString("-c:v copy -c:a aac")
-						params := []string{"-fflags", "genpts", "-rtsp_transport", "tcp", "-i", rtsp, "-hls_time", strconv.Itoa(ts_duration_second), "-hls_list_size", "0", m3u8path}
+						params := []string{"-fflags", "genpts", "-rtsp_transport", "tcp", "-i", rtsp, "-hls_time", strconv.Itoa(tsDurationSecond), "-hls_list_size", "0", m3u8path}
 						if paramStr != "default" {
 							paramsOfThisPath := strings.Split(paramStr, " ")
 							params = append(params[:6], append(paramsOfThisPath, params[6:]...)...)

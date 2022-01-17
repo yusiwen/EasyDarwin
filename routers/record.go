@@ -113,14 +113,14 @@ func (h *APIHandler) RecordFiles(c *gin.Context) {
 	files := make([]interface{}, 0)
 	mp4Path := utils.Conf().Section("rtsp").Key("m3u8_dir_path").MustString("")
 	if mp4Path != "" {
-		ffmpeg_path := utils.Conf().Section("rtsp").Key("ffmpeg_path").MustString("")
-		ffmpeg_folder, executable := filepath.Split(ffmpeg_path)
+		ffmpegPath := utils.Conf().Section("rtsp").Key("ffmpeg_path").MustString("")
+		ffmpegFolder, executable := filepath.Split(ffmpegPath)
 		split := strings.Split(executable, ".")
 		suffix := ""
 		if len(split) > 1 {
 			suffix = split[1]
 		}
-		ffprobe := ffmpeg_folder + "ffprobe" + suffix
+		ffprobe := ffmpegFolder + "ffprobe" + suffix
 		folder := filepath.Join(mp4Path, form.Folder)
 		visit := func(files *[]interface{}) filepath.WalkFunc {
 			return func(path string, info os.FileInfo, err error) error {
