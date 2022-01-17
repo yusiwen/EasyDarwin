@@ -21,9 +21,9 @@ func NewResponse(statusCode int, status, cSeq, sid, body string) *Response {
 		Header:     map[string]interface{}{"CSeq": cSeq, "Session": sid},
 		Body:       body,
 	}
-	len := len(body)
-	if len > 0 {
-		res.Header["Content-Length"] = strconv.Itoa(len)
+	bodyLen := len(body)
+	if bodyLen > 0 {
+		res.Header["Content-Length"] = strconv.Itoa(bodyLen)
 	} else {
 		delete(res.Header, "Content-Length")
 	}
@@ -41,10 +41,10 @@ func (r *Response) String() string {
 }
 
 func (r *Response) SetBody(body string) {
-	len := len(body)
+	bodyLen := len(body)
 	r.Body = body
-	if len > 0 {
-		r.Header["Content-Length"] = strconv.Itoa(len)
+	if bodyLen > 0 {
+		r.Header["Content-Length"] = strconv.Itoa(bodyLen)
 	} else {
 		delete(r.Header, "Content-Length")
 	}

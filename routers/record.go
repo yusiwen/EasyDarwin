@@ -147,8 +147,8 @@ func (h *APIHandler) RecordFiles(c *gin.Context) {
 				//cmd.Stdout = cmdOutput
 				cmd.Stderr = cmdOutput
 				err = cmd.Run()
-				bytes := cmdOutput.Bytes()
-				output := string(bytes)
+				outputBytes := cmdOutput.Bytes()
+				output := string(outputBytes)
 				//log.Printf("%v result:%v", cmd, output)
 				var average = regexp.MustCompile(`Duration: ((\d+):(\d+):(\d+).(\d+))`)
 				result := average.FindStringSubmatch(output)
