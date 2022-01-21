@@ -5,6 +5,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"github.com/EasyDarwin/EasyDarwin/extension"
 	"log"
 	"net/http"
 	"strings"
@@ -30,6 +31,7 @@ type program struct {
 	httpServer *http.Server
 	rtspPort   int
 	rtspServer *rtsp.Server
+	flvServer  *extension.FlvServer
 }
 
 func (p *program) StopHTTP() (err error) {
@@ -91,6 +93,20 @@ func (p *program) StopRTSP() (err error) {
 	return
 }
 
+func (p *program) StartFlvServer() (err error) {
+	if p.flvServer.Enabled && p.flvServer.Embedded {
+		p.flvServer.Start()
+	}
+	return nil
+}
+
+func (p *program) StopFlvServer() (err error) {
+	if p.flvServer.Enabled && p.flvServer.Embedded {
+		p.flvServer.Stop()
+	}
+	return nil
+}
+
 func (p *program) Start(s service.Service) (err error) {
 	log.Println("********** START **********")
 	if utils.IsPortInUse(p.httpPort) {
@@ -118,6 +134,7 @@ func (p *program) Start(s service.Service) (err error) {
 	}
 	p.StartRTSP()
 	p.StartHTTP()
+	p.StartFlvServer()
 
 	if !utils.Debug {
 		log.Println("log files -->", utils.LogDir())
@@ -178,6 +195,7 @@ func (p *program) Stop(s service.Service) (err error) {
 	defer utils.CloseLogWriter()
 	p.StopHTTP()
 	p.StopRTSP()
+	p.StopFlvServer()
 	models.Close()
 	return
 }
@@ -186,6 +204,9 @@ func main() {
 	flag.StringVar(&utils.FlagVarConfFile, "config", "", "configure file path")
 	flag.Parse()
 	tail := flag.Args()
+
+	t := utils.Conf().Section("flv").Key("enabled").String()
+	fmt.Println(t)
 
 	// log
 	log.SetPrefix("[EasyDarwin] ")
@@ -205,10 +226,12 @@ func main() {
 
 	httpPort := utils.Conf().Section("http").Key("port").MustInt(10008)
 	rtspServer := rtsp.GetServer()
+	flvServer := extension.GetFlvServer()
 	p := &program{
 		httpPort:   httpPort,
 		rtspPort:   rtspServer.TCPPort,
 		rtspServer: rtspServer,
+		flvServer:  flvServer,
 	}
 	s, err := service.New(p, svcConfig)
 	if err != nil {

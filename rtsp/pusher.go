@@ -1,6 +1,7 @@
 package rtsp
 
 import (
+	"github.com/EasyDarwin/EasyDarwin/extension"
 	"log"
 	"strings"
 	"sync"
@@ -12,6 +13,7 @@ import (
 type Pusher struct {
 	*Session
 	*RTSPClient
+	*extension.FlvPusher
 	players           map[string]*Player //SessionID <-> Player
 	playersLock       sync.RWMutex
 	gopCacheEnable    bool
@@ -255,6 +257,10 @@ func (pusher *Pusher) QueueRTP(pack *RTPPack) *Pusher {
 
 func (pusher *Pusher) Start() {
 	logger := pusher.Logger()
+	err := pusher.FlvPusher.Start()
+	if err != nil {
+		logger.Printf("flvpusher start failed: %v\n", err)
+	}
 	for !pusher.Stopped() {
 		var pack *RTPPack
 		pusher.cond.L.Lock()
@@ -290,6 +296,7 @@ func (pusher *Pusher) Stop() {
 		pusher.Session.Stop()
 		return
 	}
+	pusher.FlvPusher.Stop()
 	pusher.RTSPClient.Stop()
 }
 

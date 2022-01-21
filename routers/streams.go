@@ -2,6 +2,7 @@ package routers
 
 import (
 	"fmt"
+	"github.com/EasyDarwin/EasyDarwin/extension"
 	"log"
 	"net/http"
 	"strings"
@@ -65,7 +66,10 @@ func (h *APIHandler) StreamStart(c *gin.Context) {
 		client.TransType = rtsp.TransTypeTcp
 	}
 
+	flvpusher := extension.NewFlvPusher(client.URL, extension.GetFlvServer(), "live", "demo")
 	pusher := rtsp.NewClientPusher(client)
+	pusher.FlvPusher = flvpusher
+
 	if rtsp.GetServer().GetPusher(pusher.Path()) != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, fmt.Sprintf("Path %s already exists", client.Path))
 		return
@@ -78,6 +82,7 @@ func (h *APIHandler) StreamStart(c *gin.Context) {
 	}
 	log.Printf("Pull to push %v success ", form)
 	rtsp.GetServer().AddPusher(pusher)
+
 	// save to db.
 	var stream = models.Stream{
 		URL:               form.URL,

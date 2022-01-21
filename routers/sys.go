@@ -50,9 +50,9 @@ func init() {
 				now := utils.DateTime(time.Now())
 				memData = append(memData, PercentData{Time: now, Used: memStat.UsedPercent / 100})
 				cpuData = append(cpuData, PercentData{Time: now, Used: cpuStat[0] / 100})
-				pusherData = append(pusherData, CountData{Time: now, Total: uint(rtsp.Instance.GetPusherSize())})
+				pusherData = append(pusherData, CountData{Time: now, Total: uint(rtsp.GetServer().GetPusherSize())})
 				playerCnt := 0
-				for _, pusher := range rtsp.Instance.GetPushers() {
+				for _, pusher := range rtsp.GetServer().GetPushers() {
 					playerCnt += len(pusher.GetPlayers())
 				}
 				playerData = append(playerData, CountData{Time: now, Total: uint(playerCnt)})
