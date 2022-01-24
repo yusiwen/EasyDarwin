@@ -83,3 +83,5 @@ require (
 )
 
 replace github.com/gwuhaolin/livego => github.com/yusiwen/livego v0.0.0-20220124072834-66782a230a25
+
+replace github.com/u2takey/ffmpeg-go => github.com/yusiwen/ffmpeg-go v0.4.1-0.20220124090917-15bbd857e466

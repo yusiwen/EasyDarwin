@@ -4,15 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/EasyDarwin/EasyDarwin/utils"
+	config "github.com/MeloQi/EasyGoLib/utils"
+	ffmpeg "github.com/u2takey/ffmpeg-go"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"os/exec"
-
-	"github.com/EasyDarwin/EasyDarwin/utils"
-	config "github.com/MeloQi/EasyGoLib/utils"
-	ffmpeg "github.com/u2takey/ffmpeg-go"
 )
 
 type getRe struct {
@@ -26,7 +24,6 @@ type FlvPusher struct {
 	AppName   string
 	RoomName  string
 	Logger    *log.Logger
-	Context   context.Context
 	Cancel    context.CancelFunc
 }
 
@@ -37,7 +34,6 @@ func NewFlvPusher(source string, flvServer *FlvServer, app string, room string) 
 		AppName:   app,
 		RoomName:  room,
 		Logger:    log.New(os.Stdout, "[FlvPusher] ", log.LstdFlags|log.Lshortfile),
-		Context:   nil,
 		Cancel:    nil,
 	}
 	return pusher
@@ -73,20 +69,22 @@ func (s *FlvPusher) Start() error {
 	if err != nil {
 		return err
 	}
-	ctx, cancel := context.WithCancel(context.Background())
-	s.Context = ctx
-	s.Cancel = cancel
+
 	go func() {
-		c := ffmpeg.Input(s.SourceUrl, ffmpeg.KwArgs{"rtsp_transport": "tcp"}).
-			Output(pushUrl, ffmpeg.KwArgs{"c": "copy", "c:a": "aac", "f": "flv"}).Compile()
-		s.Logger.Println("flvpusher starting...")
-		ffmpegCmd := "d:\\opt\\apps\\ffmpeg-4.4.1-full_build\\bin\\ffmpeg.exe"
+		ffmpegCmd := "ffmpeg"
 		if !utils.CommandExists(ffmpegCmd) {
 			ffmpegCmd = config.Conf().Section("codec").Key("ffmpeg_binary").MustString("ffmpeg")
 		}
 
-		cmd := exec.CommandContext(s.Context, ffmpegCmd, c.Args[1:]...)
-		if err := cmd.Run(); err != nil {
+		stream := ffmpeg.Input(s.SourceUrl, ffmpeg.KwArgs{"rtsp_transport": "tcp"}).
+			Output(pushUrl, ffmpeg.KwArgs{"c": "copy", "c:a": "aac", "f": "flv"}).
+			OverWriteOutput().ErrorToStdOut()
+		s.Cancel = stream.GetCancelFunc()
+
+		s.Logger.Println("flvpusher starting...")
+		err := stream.RunWith(ffmpegCmd)
+
+		if err != nil {
 			s.Logger.Println(err)
 		}
 		s.Logger.Println("flvpusher finished")
