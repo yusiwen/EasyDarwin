@@ -13,10 +13,12 @@ require (
 	github.com/gin-gonic/gin v1.3.0
 	github.com/gwuhaolin/livego v0.0.0-20211209130643-e8d36e4519f0
 	github.com/jinzhu/gorm v1.9.2-0.20180512062900-82eb9f8a5bbb
+	github.com/kr/pretty v0.1.0
 	github.com/penggy/cors v0.0.0-20180918145040-d08bb28f7e48
 	github.com/pixelbender/go-sdp v0.0.0-20181123094152-100bc9371a0c
 	github.com/shirou/gopsutil v2.17.13-0.20180417021151-63047d776e07+incompatible
 	github.com/sirupsen/logrus v1.8.1
+	github.com/spf13/viper v1.6.3
 	github.com/teris-io/shortid v0.0.0-20171029131806-771a37caa5cf
 	github.com/u2takey/ffmpeg-go v0.4.0
 	gopkg.in/go-playground/validator.v8 v8.18.2
@@ -47,7 +49,6 @@ require (
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/jonboulle/clockwork v0.2.2 // indirect
 	github.com/json-iterator/go v1.1.9 // indirect
-	github.com/kr/pretty v0.1.0 // indirect
 	github.com/kr/text v0.1.0 // indirect
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible // indirect
 	github.com/lestrrat-go/strftime v1.0.5 // indirect
@@ -68,7 +69,6 @@ require (
 	github.com/spf13/cast v1.3.0 // indirect
 	github.com/spf13/jwalterweatherman v1.0.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/spf13/viper v1.6.3 // indirect
 	github.com/stretchr/testify v1.7.0 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/u2takey/go-utils v0.0.0-20200713025200-4704d09fc2c7 // indirect
@@ -81,3 +81,5 @@ require (
 	gopkg.in/ini.v1 v1.51.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
+
+replace github.com/gwuhaolin/livego => github.com/yusiwen/livego v0.0.0-20220124072834-66782a230a25

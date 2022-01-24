@@ -20,11 +20,16 @@ type FlvServer struct {
 	ApiAddr        string
 	StreamAddr     string
 	FlvAddr        string
+	HlsAddr        string
 	Enabled        bool
 	Embedded       bool
+	LogLevel       string
+	ReadTimeout    int
+	WriteTimeout   int
 	ApiListener    *net.TCPListener
 	StreamListener *net.TCPListener
 	FlvListener    *net.TCPListener
+	HlsListener    *net.TCPListener
 }
 
 var instance *FlvServer = nil
@@ -34,12 +39,30 @@ func GetFlvServer() *FlvServer {
 		instance = &FlvServer{
 			Enabled:        utils.Conf().Section("flv").Key("enabled").MustBool(true),
 			Embedded:       utils.Conf().Section("flv").Key("embedded_server").MustBool(true),
+			LogLevel:       utils.Conf().Section("flv").Key("log_level").MustString("info"),
 			ApiAddr:        utils.Conf().Section("flv").Key("api_addr").MustString(":8090"),
 			StreamAddr:     utils.Conf().Section("flv").Key("stream_addr").MustString(":1935"),
 			FlvAddr:        utils.Conf().Section("flv").Key("flv_addr").MustString(":7001"),
+			HlsAddr:        utils.Conf().Section("flv").Key("hls_addr").MustString(":7002"),
+			ReadTimeout:    utils.Conf().Section("flv").Key("read_timeout").MustInt(10),
+			WriteTimeout:   utils.Conf().Section("flv").Key("write_timeout").MustInt(10),
 			ApiListener:    nil,
 			StreamListener: nil,
 			FlvListener:    nil,
+			HlsListener:    nil,
+		}
+
+		configure.Config.Set("read_timeout", instance.ReadTimeout)
+		configure.Config.Set("write_timeout", instance.ReadTimeout)
+		configure.Config.Set("level", instance.LogLevel)
+		configure.Config.Set("rtmp_addr", instance.StreamAddr)
+		configure.Config.Set("httpflv_addr", instance.FlvAddr)
+		configure.Config.Set("api_addr", instance.ApiAddr)
+
+		// Log
+		if l, err := log.ParseLevel(configure.Config.GetString("level")); err == nil {
+			log.SetLevel(l)
+			log.SetReportCaller(l == log.DebugLevel)
 		}
 	}
 	return instance
@@ -53,6 +76,30 @@ func init() {
 			return fmt.Sprintf("%s()", f.Function), fmt.Sprintf(" %s:%d", filename, f.Line)
 		},
 	})
+}
+
+func (s *FlvServer) startHls() *hls.Server {
+	addr, err := net.ResolveTCPAddr("tcp", s.HlsAddr)
+	if err != nil {
+		log.Fatal(err)
+	}
+	hlsListen, err := net.ListenTCP("tcp", addr)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	s.HlsListener = hlsListen
+	hlsServer := hls.NewServer()
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Error("HLS server panic: ", r)
+			}
+		}()
+		log.Info("HLS listen On ", s.HlsAddr)
+		hlsServer.Serve(hlsListen)
+	}()
+	return hlsServer
 }
 
 func (s *FlvServer) startRtmp(stream *rtmp.RtmpStream, hlsServer *hls.Server) {
@@ -134,34 +181,39 @@ func (s *FlvServer) startAPI(stream *rtmp.RtmpStream) {
 }
 
 func (s *FlvServer) Start() {
-	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				log.Error("livego panic: ", r)
-				time.Sleep(1 * time.Second)
-			}
-		}()
 
-		apps := configure.Applications{}
-		configure.Config.UnmarshalKey("server", &apps)
-		for _, app := range apps {
-			stream := rtmp.NewRtmpStream()
-			var hlsServer *hls.Server
-			if app.Flv {
-				s.startHTTPFlv(stream)
-			}
-			if app.Api {
-				s.startAPI(stream)
-			}
-
-			s.startRtmp(stream, hlsServer)
+	defer func() {
+		if r := recover(); r != nil {
+			log.Error("livego panic: ", r)
+			time.Sleep(1 * time.Second)
 		}
 	}()
+
+	apps := configure.Applications{}
+	configure.Config.UnmarshalKey("server", &apps)
+	for _, app := range apps {
+		stream := rtmp.NewRtmpStream()
+		var hlsServer *hls.Server
+		if app.Hls {
+			hlsServer = s.startHls()
+		}
+		if app.Flv {
+			s.startHTTPFlv(stream)
+		}
+		if app.Api {
+			s.startAPI(stream)
+		}
+
+		s.startRtmp(stream, hlsServer)
+	}
 }
 
 func (s *FlvServer) Stop() {
 	if s.ApiListener != nil {
 		s.ApiListener.Close()
+	}
+	if s.HlsListener != nil {
+		s.HlsListener.Close()
 	}
 	if s.FlvListener != nil {
 		s.FlvListener.Close()

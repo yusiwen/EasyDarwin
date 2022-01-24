@@ -48,6 +48,7 @@ type ServerCfg struct {
 
 // default config
 var defaultConf = ServerCfg{
+	Level:           "info",
 	ConfigFile:      "livego.yaml",
 	FLVArchive:      false,
 	RTMPNoAuth:      false,
@@ -71,11 +72,7 @@ var defaultConf = ServerCfg{
 
 func init() {
 	// Default config
-	b, _ := json.Marshal(defaultConf)
-	defaultConfig := bytes.NewReader(b)
-	viper.SetConfigType("json")
-	viper.ReadConfig(defaultConfig)
-	configure.Config.MergeConfigMap(viper.AllSettings())
+	UseConfig(&defaultConf)
 
 	// Environment
 	replacer := strings.NewReplacer(".", "_")
@@ -92,4 +89,12 @@ func init() {
 	c := configure.ServerCfg{}
 	configure.Config.Unmarshal(&c)
 	log.Debugf("Current configurations: \n%# v", pretty.Formatter(c))
+}
+
+func UseConfig(c *ServerCfg) {
+	b, _ := json.Marshal(c)
+	config := bytes.NewReader(b)
+	viper.SetConfigType("json")
+	viper.ReadConfig(config)
+	configure.Config.MergeConfigMap(viper.AllSettings())
 }
