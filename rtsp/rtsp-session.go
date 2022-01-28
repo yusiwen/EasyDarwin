@@ -33,14 +33,14 @@ type SessionType int
 
 const (
 	SessionTypePusher SessionType = iota
-	SesseionTypePlayer
+	SessionTypePlayer
 )
 
 func (st SessionType) String() string {
 	switch st {
 	case SessionTypePusher:
 		return "pusher"
-	case SesseionTypePlayer:
+	case SessionTypePlayer:
 		return "player"
 	}
 	return "unknown"
@@ -381,7 +381,7 @@ func (session *Session) handleRequest(req *Request) {
 		switch req.Method {
 		case "PLAY", "RECORD":
 			switch session.Type {
-			case SesseionTypePlayer:
+			case SessionTypePlayer:
 				if session.Pusher.HasPlayer(session.Player) {
 					session.Player.Pause(false)
 				} else {
@@ -494,7 +494,7 @@ func (session *Session) handleRequest(req *Request) {
 			}
 		}
 	case "DESCRIBE":
-		session.Type = SesseionTypePlayer
+		session.Type = SessionTypePlayer
 		session.URL = req.URL
 
 		reqUrl, err := url.Parse(req.URL)
@@ -598,7 +598,7 @@ func (session *Session) handleRequest(req *Request) {
 			session.TransType = TransTypeUdp
 			// no need for tcp timeout.
 			session.Conn.timeout = 0
-			if session.Type == SesseionTypePlayer && session.UDPClient == nil {
+			if session.Type == SessionTypePlayer && session.UDPClient == nil {
 				session.UDPClient = &UDPClient{
 					Session: session,
 				}
@@ -610,7 +610,7 @@ func (session *Session) handleRequest(req *Request) {
 			}
 			logger.Printf("Parse SETUP req.TRANSPORT:UDP.Session.Type:%d,control:%s, AControl:%s,VControl:%s", session.Type, setupPath, aPath, vPath)
 			if setupPath == aPath || aPath != "" && strings.LastIndex(setupPath, aPath) == len(setupPath)-len(aPath) {
-				if session.Type == SesseionTypePlayer {
+				if session.Type == SessionTypePlayer {
 					session.UDPClient.APort, _ = strconv.Atoi(udpMatchs[1])
 					session.UDPClient.AControlPort, _ = strconv.Atoi(udpMatchs[3])
 					if err := session.UDPClient.SetupAudio(); err != nil {
@@ -638,7 +638,7 @@ func (session *Session) handleRequest(req *Request) {
 					ts = strings.Join(tss, ";")
 				}
 			} else if setupPath == vPath || vPath != "" && strings.LastIndex(setupPath, vPath) == len(setupPath)-len(vPath) {
-				if session.Type == SesseionTypePlayer {
+				if session.Type == SessionTypePlayer {
 					session.UDPClient.VPort, _ = strconv.Atoi(udpMatchs[1])
 					session.UDPClient.VControlPort, _ = strconv.Atoi(udpMatchs[3])
 					if err := session.UDPClient.SetupVideo(); err != nil {
