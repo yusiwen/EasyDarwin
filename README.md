@@ -1,6 +1,4 @@
-# EasyDarwin(mod version)
-
-## Note
+# EasyDarwin (mod version)
 
 My custom modded version of EasyDarwin
 
@@ -21,6 +19,56 @@ My custom modded version of EasyDarwin
 - Integrate [my custom mod LiveGo](https://github.com/yusiwen/livego)
 - Push rtmp stream to embedded livego server or external rtmp server
 
+2022-01-27:
+
+- Rewrite logger
+- Enable settings for codecs for ffmpeg
+
 ## Build
 
+### Pre-requisites
 
+- Python 2.7
+- Node.js 12.x
+- Go 1.15+
+
+Install building tools
+
+```bash
+# For front-end
+$ npm install -g apidoc@0.29.0 rimraf cross-env
+
+# For Go
+$ go get github.com/akavel/rsrc
+$ go get github.com/go-bindata/go-bindata/...
+$ go get github.com/elazarl/go-bindata-assetfs/...
+```
+
+### Start dev server for front-end development
+
+```bash
+$ npm run dev:www
+```
+
+### Development binary
+
+Development builds are not packed with front-end files
+
+```bash
+$ npm run dev:win
+
+# On linux
+$ npm run dev:lin
+```
+
+### Build binary for Windows
+
+```bash
+$ npm run build:www
+```
+
+### Build binary for Linux
+
+```bash
+$ npm run build:lin
+```
