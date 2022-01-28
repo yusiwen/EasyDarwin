@@ -1,6 +1,7 @@
 .vscode
 dist
 /bindata.go
+/easydarwin.ini
 /easydarwin
 /EasyDarwin.exe
 /EasyDarwin.exe~
