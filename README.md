@@ -36,12 +36,18 @@ Install building tools
 
 ```bash
 # For front-end
-$ npm install -g apidoc@0.29.0 rimraf cross-env
+$ npm install -g apidoc@0.29.0 rimraf
 
 # For Go
 $ go get github.com/akavel/rsrc
 $ go get github.com/go-bindata/go-bindata/...
 $ go get github.com/elazarl/go-bindata-assetfs/...
+```
+
+### Install npm modules
+
+```bash
+$ npm install
 ```
 
 ### Start dev server for front-end development
