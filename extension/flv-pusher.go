@@ -10,6 +10,7 @@ import (
 	ffmpeg "github.com/u2takey/ffmpeg-go"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 type getRe struct {
@@ -19,19 +20,23 @@ type getRe struct {
 
 type FlvPusher struct {
 	*FlvServer
-	SourceUrl string
-	AppName   string
-	RoomName  string
-	Cancel    context.CancelFunc
+	SourceUrl    string
+	SourceACodec string
+	SourceVCodec string
+	AppName      string
+	RoomName     string
+	Cancel       context.CancelFunc
 }
 
-func NewFlvPusher(source string, flvServer *FlvServer, app string, room string) *FlvPusher {
+func NewFlvPusher(source string, acodec string, vcodec string, flvServer *FlvServer, app string, room string) *FlvPusher {
 	pusher := &FlvPusher{
-		SourceUrl: source,
-		FlvServer: flvServer,
-		AppName:   app,
-		RoomName:  room,
-		Cancel:    nil,
+		SourceUrl:    source,
+		SourceACodec: acodec,
+		SourceVCodec: vcodec,
+		FlvServer:    flvServer,
+		AppName:      app,
+		RoomName:     room,
+		Cancel:       nil,
 	}
 	return pusher
 }
@@ -73,17 +78,23 @@ func (s *FlvPusher) Start() error {
 			ffmpegCmd = config.Conf().Section("codec").Key("ffmpeg_binary").MustString("ffmpeg")
 		}
 
+		ffmpegArgs := ffmpeg.KwArgs{"c:a": "aac", "f": "flv"}
+		if strings.EqualFold(s.SourceVCodec, "H264") {
+			ffmpegArgs["c:v"] = "copy"
+		} else {
+			ffmpegArgs["c:v"] = config.Conf().Section("codec").Key("ffmpeg_video_codec").MustString("libx264")
+		}
+
 		stream := ffmpeg.Input(s.SourceUrl, ffmpeg.KwArgs{"rtsp_transport": "tcp"}).
-			Output(pushUrl, ffmpeg.KwArgs{"c": "copy", "c:a": "aac", "f": "flv"}).
-			OverWriteOutput().ErrorToStdOut()
+			Output(pushUrl, ffmpegArgs).OverWriteOutput().ErrorToStdOut()
 		s.Cancel = stream.GetCancelFunc()
 
-		log.Info("flvpusher starting...")
+		log.Info("FlvPusher starting...")
 		err := stream.RunWith(ffmpegCmd)
 		if err != nil {
 			log.Error("failed to start ffmpeg: ", err)
 		}
-		log.Info("flvpusher finished")
+		log.Info("FlvPusher finished")
 	}()
 	return nil
 }

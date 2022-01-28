@@ -66,9 +66,9 @@ func (h *APIHandler) StreamStart(c *gin.Context) {
 		client.TransType = rtsp.TransTypeTcp
 	}
 
-	flvpusher := extension.NewFlvPusher(client.URL, extension.GetFlvServer(), "live", "demo")
+	flvPusher := extension.NewFlvPusher(client.URL, client.ACodec, client.VCodec, extension.GetFlvServer(), "live", "demo")
 	pusher := rtsp.NewClientPusher(client)
-	pusher.FlvPusher = flvpusher
+	pusher.FlvPusher = flvPusher
 
 	if rtsp.GetServer().GetPusher(pusher.Path()) != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, fmt.Sprintf("Path %s already exists", client.Path))
