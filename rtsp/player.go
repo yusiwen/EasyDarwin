@@ -1,6 +1,7 @@
 package rtsp
 
 import (
+	"fmt"
 	"github.com/MeloQi/EasyGoLib/utils"
 	"sync"
 	"time"
@@ -38,7 +39,7 @@ func NewPlayer(session *Session, pusher *Pusher) (player *Player) {
 func (player *Player) QueueRTP(pack *RTPPack) *Player {
 	logger := player.logger
 	if pack == nil {
-		logger.Printf("player queue enter nil pack, drop it")
+		logger.Warn("player queue enter nil pack, drop it")
 		return player
 	}
 	if player.paused && player.dropPacketWhenPaused {
@@ -50,7 +51,9 @@ func (player *Player) QueueRTP(pack *RTPPack) *Player {
 		player.queue = player.queue[1:]
 		if player.debugLogEnable {
 			queueLen := len(player.queue)
-			logger.Printf("Player %s, QueueRTP, exceeds limit(%d), drop %d old packets, current queue.len=%d\n", player.String(), player.queueLimit, oldLen-queueLen, queueLen)
+			logger.Debug(fmt.Sprintf(
+				"Player %s, QueueRTP, exceeds limit(%d), drop %d old packets, current queue.len=%d",
+				player.String(), player.queueLimit, oldLen-queueLen, queueLen))
 		}
 	}
 	player.cond.Signal()
@@ -78,16 +81,17 @@ func (player *Player) Start() {
 		}
 		if pack == nil {
 			if !player.Stopped {
-				logger.Printf("player not stopped, but queue take out nil pack")
+				logger.Warn("player not stopped, but queue take out nil pack")
 			}
 			continue
 		}
 		if err := player.SendRTP(pack); err != nil {
-			logger.Println(err)
+			logger.Error(err)
 		}
 		elapsed := time.Now().Sub(timer)
 		if player.debugLogEnable && elapsed >= 30*time.Second {
-			logger.Printf("Player %s, Send a package.type:%d, queue.len=%d\n", player.String(), pack.Type, queueLen)
+			logger.Debug(fmt.Sprintf(
+				"Player %s, Send a package.type:%d, queue.len=%d", player.String(), pack.Type, queueLen))
 			timer = time.Now()
 		}
 	}
@@ -95,9 +99,9 @@ func (player *Player) Start() {
 
 func (player *Player) Pause(paused bool) {
 	if paused {
-		player.logger.Printf("Player %s, Pause\n", player.String())
+		player.logger.Info(fmt.Sprintf("Player %s, Pause", player.String()))
 	} else {
-		player.logger.Printf("Player %s, Play\n", player.String())
+		player.logger.Info(fmt.Sprintf("Player %s, Play", player.String()))
 	}
 	player.cond.L.Lock()
 	if paused && player.dropPacketWhenPaused && len(player.queue) > 0 {

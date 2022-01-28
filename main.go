@@ -6,7 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/EasyDarwin/EasyDarwin/extension"
-	"log"
+	"github.com/EasyDarwin/EasyDarwin/log"
 	"net/http"
 	"strings"
 	"time"
@@ -54,12 +54,12 @@ func (p *program) StartHTTP() (err error) {
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 	link := fmt.Sprintf("http://%s:%d", utils.LocalIP(), p.httpPort)
-	log.Println("http server start -->", link)
+	log.Info("http server start -->", link)
 	go func() {
 		if err := p.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Println("start http server error", err)
+			log.Error("start http server error: ", err)
 		}
-		log.Println("http server end")
+		log.Info("http server end")
 	}()
 	return
 }
@@ -74,12 +74,12 @@ func (p *program) StartRTSP() (err error) {
 		sport = fmt.Sprintf(":%d", p.rtspPort)
 	}
 	link := fmt.Sprintf("rtsp://%s%s", utils.LocalIP(), sport)
-	log.Println("rtsp server start -->", link)
+	log.Info("rtsp server start -->", link)
 	go func() {
 		if err := p.rtspServer.Start(); err != nil {
-			log.Println("start rtsp server error", err)
+			log.Error("start rtsp server error: ", err)
 		}
-		log.Println("rtsp server end")
+		log.Info("rtsp server end")
 	}()
 	return
 }
@@ -108,7 +108,7 @@ func (p *program) StopFlvServer() (err error) {
 }
 
 func (p *program) Start(s service.Service) (err error) {
-	log.Println("********** START **********")
+	log.Info("********** START **********")
 	if utils.IsPortInUse(p.httpPort) {
 		err = fmt.Errorf("HTTP port[%d] In Use", p.httpPort)
 		return
@@ -137,7 +137,7 @@ func (p *program) Start(s service.Service) (err error) {
 	p.StartFlvServer()
 
 	if !utils.Debug {
-		log.Println("log files -->", utils.LogDir())
+		log.Debug("log files -->", utils.LogDir())
 		log.SetOutput(utils.GetLogWriter())
 	}
 	go func() {
@@ -151,12 +151,12 @@ func (p *program) Start(s service.Service) (err error) {
 	}()
 
 	go func() {
-		log.Printf("starting daemon for pulling streams")
+		log.Info("starting daemon for pulling streams")
 		for {
 			var streams []models.Stream
 			db.SQLite.Find(&streams)
 			if err := db.SQLite.Find(&streams).Error; err != nil {
-				log.Printf("find stream err:%v", err)
+				log.Error("find stream err: ", err)
 				return
 			}
 			for i := len(streams) - 1; i > -1; i-- {
@@ -176,7 +176,7 @@ func (p *program) Start(s service.Service) (err error) {
 
 				err = client.Start(time.Duration(v.IdleTimeout) * time.Second)
 				if err != nil {
-					log.Printf("Pull stream err :%v", err)
+					log.Error("pull stream err: ", err)
 					continue
 				}
 				pusher := rtsp.NewClientPusher(client)
@@ -191,7 +191,7 @@ func (p *program) Start(s service.Service) (err error) {
 }
 
 func (p *program) Stop(s service.Service) (err error) {
-	defer log.Println("********** STOP **********")
+	defer log.Info("********** STOP **********")
 	defer utils.CloseLogWriter()
 	p.StopHTTP()
 	p.StopRTSP()
@@ -208,12 +208,8 @@ func main() {
 	t := utils.Conf().Section("flv").Key("enabled").String()
 	fmt.Println(t)
 
-	// log
-	log.SetPrefix("[EasyDarwin] ")
-	log.SetFlags(log.Lshortfile | log.LstdFlags)
-
-	log.Printf("git commit code:%s", gitCommitCode)
-	log.Printf("build date:%s", buildDateTime)
+	log.Info("git commit code: ", gitCommitCode)
+	log.Info("build date: ", buildDateTime)
 	routers.BuildVersion = fmt.Sprintf("%s.%s", routers.BuildVersion, gitCommitCode)
 	routers.BuildDateTime = buildDateTime
 
@@ -235,25 +231,25 @@ func main() {
 	}
 	s, err := service.New(p, svcConfig)
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		utils.PauseExit()
 	}
 	if len(tail) > 0 {
 		cmd := strings.ToLower(tail[0])
 		if cmd == "install" || cmd == "stop" || cmd == "start" || cmd == "uninstall" {
 			figure.NewFigure("EasyDarwin", "", false).Print()
-			log.Println(svcConfig.Name, cmd, "...")
+			log.Info(svcConfig.Name, cmd, "...")
 			if err = service.Control(s, cmd); err != nil {
-				log.Println(err)
+				log.Error(err)
 				utils.PauseExit()
 			}
-			log.Println(svcConfig.Name, cmd, "ok")
+			log.Info(svcConfig.Name, cmd, "ok")
 			return
 		}
 	}
 	figure.NewFigure("EasyDarwin", "", false).Print()
 	if err = s.Run(); err != nil {
-		log.Println(err)
+		log.Error(err)
 		utils.PauseExit()
 	}
 }

@@ -80,12 +80,6 @@ func init() {
 	configure.Config.AllowEmptyEnv(true)
 	configure.Config.AutomaticEnv()
 
-	// Log
-	if l, err := log.ParseLevel(configure.Config.GetString("level")); err == nil {
-		log.SetLevel(l)
-		log.SetReportCaller(l == log.DebugLevel)
-	}
-
 	c := configure.ServerCfg{}
 	configure.Config.Unmarshal(&c)
 	log.Debugf("Current configurations: \n%# v", pretty.Formatter(c))

@@ -4,13 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/EasyDarwin/EasyDarwin/log"
 	"github.com/EasyDarwin/EasyDarwin/utils"
 	config "github.com/MeloQi/EasyGoLib/utils"
 	ffmpeg "github.com/u2takey/ffmpeg-go"
 	"io/ioutil"
-	"log"
 	"net/http"
-	"os"
 )
 
 type getRe struct {
@@ -23,7 +22,6 @@ type FlvPusher struct {
 	SourceUrl string
 	AppName   string
 	RoomName  string
-	Logger    *log.Logger
 	Cancel    context.CancelFunc
 }
 
@@ -33,7 +31,6 @@ func NewFlvPusher(source string, flvServer *FlvServer, app string, room string) 
 		FlvServer: flvServer,
 		AppName:   app,
 		RoomName:  room,
-		Logger:    log.New(os.Stdout, "[FlvPusher] ", log.LstdFlags|log.Lshortfile),
 		Cancel:    nil,
 	}
 	return pusher
@@ -81,13 +78,12 @@ func (s *FlvPusher) Start() error {
 			OverWriteOutput().ErrorToStdOut()
 		s.Cancel = stream.GetCancelFunc()
 
-		s.Logger.Println("flvpusher starting...")
+		log.Info("flvpusher starting...")
 		err := stream.RunWith(ffmpegCmd)
-
 		if err != nil {
-			s.Logger.Println(err)
+			log.Error("failed to start ffmpeg: ", err)
 		}
-		s.Logger.Println("flvpusher finished")
+		log.Info("flvpusher finished")
 	}()
 	return nil
 }

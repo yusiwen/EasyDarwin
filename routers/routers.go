@@ -2,11 +2,11 @@ package routers
 
 import (
 	"fmt"
-	"log"
 	"mime"
 	"net/http"
 	"strings"
 
+	"github.com/EasyDarwin/EasyDarwin/log"
 	"github.com/MeloQi/EasyGoLib/db"
 	"github.com/MeloQi/EasyGoLib/utils"
 	"github.com/MeloQi/sessions"
@@ -84,7 +84,7 @@ func Errors() gin.HandlerFunc {
 						return
 					}
 				default:
-					log.Println(err.Err.Error())
+					log.Error(err.Err.Error())
 					c.AbortWithStatusJSON(http.StatusBadRequest, "Inner Error")
 					return
 				}

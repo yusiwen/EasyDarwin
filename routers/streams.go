@@ -3,7 +3,7 @@ package routers
 import (
 	"fmt"
 	"github.com/EasyDarwin/EasyDarwin/extension"
-	"log"
+	"github.com/EasyDarwin/EasyDarwin/log"
 	"net/http"
 	"strings"
 	"time"
@@ -41,7 +41,7 @@ func (h *APIHandler) StreamStart(c *gin.Context) {
 	var form Form
 	err := c.Bind(&form)
 	if err != nil {
-		log.Printf("Pull to push err:%v", err)
+		log.Error("pull to push err: ", err)
 		return
 	}
 	agent := fmt.Sprintf("EasyDarwinGo/%s", BuildVersion)
@@ -76,11 +76,11 @@ func (h *APIHandler) StreamStart(c *gin.Context) {
 	}
 	err = client.Start(time.Duration(form.IdleTimeout) * time.Second)
 	if err != nil {
-		log.Printf("Pull stream err :%v", err)
+		log.Error("pull stream err: ", err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, fmt.Sprintf("Pull stream err: %v", err))
 		return
 	}
-	log.Printf("Pull to push %v success ", form)
+	log.Info("pull to push %v success ", form)
 	rtsp.GetServer().AddPusher(pusher)
 
 	// save to db.
@@ -112,7 +112,7 @@ func (h *APIHandler) StreamStop(c *gin.Context) {
 	var form Form
 	err := c.Bind(&form)
 	if err != nil {
-		log.Printf("stop pull to push err:%v", err)
+		log.Error("stop pull to push err: ", err)
 		return
 	}
 	pushers := rtsp.GetServer().GetPushers()
@@ -120,7 +120,7 @@ func (h *APIHandler) StreamStop(c *gin.Context) {
 		if v.ID() == form.ID {
 			v.Stop()
 			c.IndentedJSON(200, "OK")
-			log.Printf("Stop %v success ", v)
+			log.Info(fmt.Sprintf("Stop %v success ", v))
 			if v.RTSPClient != nil {
 				var stream models.Stream
 				stream.URL = v.RTSPClient.URL

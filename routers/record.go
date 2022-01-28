@@ -2,7 +2,6 @@ package routers
 
 import (
 	"bytes"
-	"log"
 	"math"
 	"os"
 	"os/exec"
@@ -12,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/EasyDarwin/EasyDarwin/log"
 	"github.com/MeloQi/EasyGoLib/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -45,7 +45,7 @@ func (h *APIHandler) RecordFolders(c *gin.Context) {
 	mp4Path := utils.Conf().Section("rtsp").Key("m3u8_dir_path").MustString("")
 	form := utils.NewPageForm()
 	if err := c.Bind(form); err != nil {
-		log.Printf("record folder bind err:%v", err)
+		log.Error("record folder bind err: ", err)
 		return
 	}
 	var files = make([]interface{}, 0)
@@ -67,7 +67,7 @@ func (h *APIHandler) RecordFolders(c *gin.Context) {
 		}
 		err := filepath.Walk(mp4Path, visit(&files))
 		if err != nil {
-			log.Printf("Query RecordFolders err:%v", err)
+			log.Error("Query RecordFolders err: ", err)
 		}
 	}
 	pr := utils.NewPageResult(files)
@@ -106,7 +106,7 @@ func (h *APIHandler) RecordFiles(c *gin.Context) {
 	form.Limit = math.MaxUint32
 	err := c.Bind(&form)
 	if err != nil {
-		log.Printf("record file bind err:%v", err)
+		log.Error("record file bind err: ", err)
 		return
 	}
 
@@ -175,7 +175,7 @@ func (h *APIHandler) RecordFiles(c *gin.Context) {
 		}
 		err = filepath.Walk(folder, visit(&files))
 		if err != nil {
-			log.Printf("Query RecordFolders err:%v", err)
+			log.Error("Query RecordFolders err: ", err)
 		}
 	}
 

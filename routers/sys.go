@@ -2,12 +2,12 @@ package routers
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"runtime"
 	"strings"
 	"time"
 
+	"github.com/EasyDarwin/EasyDarwin/log"
 	"github.com/EasyDarwin/EasyDarwin/models"
 	"github.com/EasyDarwin/EasyDarwin/rtsp"
 	"github.com/MeloQi/EasyGoLib/db"
@@ -128,7 +128,7 @@ func (h *APIHandler) GetServerInfo(c *gin.Context) {
  * @apiUse simpleSuccess
  */
 func (h *APIHandler) Restart(c *gin.Context) {
-	log.Println("Restart...")
+	log.Info("restart...")
 	c.JSON(http.StatusOK, "OK")
 	go func() {
 		select {

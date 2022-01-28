@@ -1,8 +1,9 @@
 package rtsp
 
 import (
+	"fmt"
 	"github.com/EasyDarwin/EasyDarwin/extension"
-	"log"
+	"github.com/EasyDarwin/EasyDarwin/log"
 	"strings"
 	"sync"
 	"time"
@@ -196,14 +197,14 @@ func (pusher *Pusher) bindSession(session *Session) {
 	pusher.Session = session
 	session.RTPHandles = append(session.RTPHandles, func(pack *RTPPack) {
 		if session != pusher.Session {
-			session.logger.Printf("Session recv rtp to pusher.but pusher got a new session[%v].", pusher.Session.ID)
+			session.logger.Info("Session recv rtp to pusher.but pusher got a new session.")
 			return
 		}
 		pusher.QueueRTP(pack)
 	})
 	session.StopHandles = append(session.StopHandles, func() {
 		if session != pusher.Session {
-			session.logger.Printf("Session stop to release pusher.but pusher got a new session[%v].", pusher.Session.ID)
+			session.logger.Info("Session stop to release pusher.but pusher got a new session")
 			return
 		}
 		pusher.ClearPlayer()
@@ -218,7 +219,7 @@ func (pusher *Pusher) bindSession(session *Session) {
 
 func (pusher *Pusher) RebindSession(session *Session) bool {
 	if pusher.RTSPClient != nil {
-		pusher.Logger().Printf("call RebindSession[%s] to a Client-Pusher. got false", session.ID)
+		pusher.Logger().Warn("call RebindSession to a Client-Pusher. got false")
 		return false
 	}
 	sess := pusher.Session
@@ -236,7 +237,7 @@ func (pusher *Pusher) RebindSession(session *Session) bool {
 
 func (pusher *Pusher) RebindClient(client *RTSPClient) bool {
 	if pusher.Session != nil {
-		pusher.Logger().Printf("call RebindClient[%s] to a Session-Pusher. got false", client.ID)
+		pusher.Logger().Warn("call RebindClient to a Session-Pusher. got false")
 		return false
 	}
 	sess := pusher.RTSPClient
@@ -259,7 +260,7 @@ func (pusher *Pusher) Start() {
 	logger := pusher.Logger()
 	err := pusher.FlvPusher.Start()
 	if err != nil {
-		logger.Printf("flvpusher start failed: %v\n", err)
+		logger.Error(fmt.Sprintf("flvpusher start failed: %v", err))
 	}
 	for !pusher.Stopped() {
 		var pack *RTPPack
@@ -274,7 +275,7 @@ func (pusher *Pusher) Start() {
 		pusher.cond.L.Unlock()
 		if pack == nil {
 			if !pusher.Stopped() {
-				logger.Printf("pusher not stopped, but queue take out nil pack")
+				logger.Warn("pusher not stopped, but queue take out nil pack")
 			}
 			continue
 		}
@@ -340,7 +341,7 @@ func (pusher *Pusher) AddPlayer(player *Player) *Pusher {
 	if _, ok := pusher.players[player.ID]; !ok {
 		pusher.players[player.ID] = player
 		go player.Start()
-		logger.Printf("%v start, now player size[%d]", player, len(pusher.players))
+		logger.Info(fmt.Sprintf("%v start, now player size[%d]", player, len(pusher.players)))
 	}
 	pusher.playersLock.Unlock()
 	return pusher
@@ -354,7 +355,7 @@ func (pusher *Pusher) RemovePlayer(player *Player) *Pusher {
 		return pusher
 	}
 	delete(pusher.players, player.ID)
-	logger.Printf("%v end, now player size[%d]\n", player, len(pusher.players))
+	logger.Info(fmt.Sprintf("%v end, now player size[%d]\n", player, len(pusher.players)))
 	pusher.playersLock.Unlock()
 	return pusher
 }

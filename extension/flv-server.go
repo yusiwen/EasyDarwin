@@ -1,7 +1,7 @@
 package extension
 
 import (
-	"fmt"
+	"github.com/EasyDarwin/EasyDarwin/log"
 	"github.com/MeloQi/EasyGoLib/utils"
 	"github.com/gwuhaolin/livego/configure"
 	"github.com/gwuhaolin/livego/protocol/api"
@@ -9,11 +9,7 @@ import (
 	"github.com/gwuhaolin/livego/protocol/httpflv"
 	"github.com/gwuhaolin/livego/protocol/rtmp"
 	"net"
-	"path"
-	"runtime"
 	"time"
-
-	log "github.com/sirupsen/logrus"
 )
 
 type FlvServer struct {
@@ -58,24 +54,8 @@ func GetFlvServer() *FlvServer {
 		configure.Config.Set("rtmp_addr", instance.StreamAddr)
 		configure.Config.Set("httpflv_addr", instance.FlvAddr)
 		configure.Config.Set("api_addr", instance.ApiAddr)
-
-		// Log
-		if l, err := log.ParseLevel(configure.Config.GetString("level")); err == nil {
-			log.SetLevel(l)
-			log.SetReportCaller(l == log.DebugLevel)
-		}
 	}
 	return instance
-}
-
-func init() {
-	log.SetFormatter(&log.TextFormatter{
-		FullTimestamp: true,
-		CallerPrettyfier: func(f *runtime.Frame) (string, string) {
-			filename := path.Base(f.File)
-			return fmt.Sprintf("%s()", f.Function), fmt.Sprintf(" %s:%d", filename, f.Line)
-		},
-	})
 }
 
 func (s *FlvServer) startHls() *hls.Server {

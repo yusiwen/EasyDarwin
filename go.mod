@@ -19,6 +19,7 @@ require (
 	github.com/shirou/gopsutil v2.17.13-0.20180417021151-63047d776e07+incompatible
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/viper v1.6.3
+	github.com/t-tomalak/logrus-easy-formatter v0.0.0-20190827215021-c074f06c5816
 	github.com/teris-io/shortid v0.0.0-20171029131806-771a37caa5cf
 	github.com/u2takey/ffmpeg-go v0.4.0
 	gopkg.in/go-playground/validator.v8 v8.18.2
