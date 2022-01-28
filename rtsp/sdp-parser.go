@@ -12,7 +12,7 @@ type SDPInfo struct {
 	Codec              string
 	TimeScale          int
 	Control            string
-	Rtpmap             int
+	RtpMap             int
 	Config             []byte
 	SpropParameterSets [][]byte
 	PayloadType        int
@@ -53,7 +53,7 @@ func ParseSDP(sdpRaw string) map[string]*SDPInfo {
 							case "control":
 								info.Control = val
 							case "rtpmap":
-								info.Rtpmap, _ = strconv.Atoi(val)
+								info.RtpMap, _ = strconv.Atoi(val)
 							}
 						}
 						keyval = strings.Split(field, "/")
