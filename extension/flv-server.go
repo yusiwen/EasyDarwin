@@ -102,14 +102,16 @@ func (s *FlvServer) startRtmp(stream *rtmp.RtmpStream, hlsServer *hls.Server) {
 		log.Info("HLS server enabled....")
 	}
 
-	defer func() {
-		if r := recover(); r != nil {
-			log.Error("RTMP server panic: ", r)
-		}
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Error("RTMP server panic: ", r)
+			}
+		}()
+		log.Info("RTMP Listen On ", s.StreamAddr)
+		s.StreamListener = rtmpListen
+		rtmpServer.Serve(rtmpListen)
 	}()
-	log.Info("RTMP Listen On ", s.StreamAddr)
-	s.StreamListener = rtmpListen
-	rtmpServer.Serve(rtmpListen)
 }
 
 func (s *FlvServer) startHTTPFlv(stream *rtmp.RtmpStream) {
