@@ -42,6 +42,7 @@ $ npm install -g apidoc@0.29.0 rimraf
 $ go get github.com/akavel/rsrc
 $ go get github.com/go-bindata/go-bindata/...
 $ go get github.com/elazarl/go-bindata-assetfs/...
+$ go get github.com/yusiwen/go-build-helper
 ```
 
 ### Install npm modules
@@ -68,6 +69,8 @@ $ npm run dev:lin
 ```
 
 ### Build binary for Windows
+
+Run command below in Git-bash or MinGW shell
 
 ```bash
 $ npm run build:www
