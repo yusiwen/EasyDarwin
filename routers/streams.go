@@ -66,7 +66,8 @@ func (h *APIHandler) StreamStart(c *gin.Context) {
 		client.TransType = rtsp.TransTypeTcp
 	}
 
-	flvPusher := extension.NewFlvPusher(client.URL, client.ACodec, client.VCodec, extension.GetFlvServer(), "live", "demo")
+	flvPusher := extension.NewFlvPusher(client.URL, client.ACodec, client.VCodec, extension.GetFlvServer(),
+		"live", client.ID)
 	pusher := rtsp.NewClientPusher(client)
 	pusher.FlvPusher = flvPusher
 
