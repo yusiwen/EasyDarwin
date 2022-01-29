@@ -144,9 +144,11 @@ func (p *program) Start(s service.Service) (err error) {
 		for range routers.API.RestartChan {
 			p.StopHTTP()
 			p.StopRTSP()
+			p.StopFlvServer()
 			utils.ReloadConf()
 			p.StartRTSP()
 			p.StartHTTP()
+			p.StartFlvServer()
 		}
 	}()
 
@@ -179,7 +181,10 @@ func (p *program) Start(s service.Service) (err error) {
 					log.Error("pull stream err: ", err)
 					continue
 				}
+				flvPusher := extension.NewFlvPusher(client.URL, client.ACodec, client.VCodec, extension.GetFlvServer(),
+					"live", client.ID)
 				pusher := rtsp.NewClientPusher(client)
+				pusher.FlvPusher = flvPusher
 				rtsp.GetServer().AddPusher(pusher)
 				//streams = streams[0:i]
 				//streams = append(streams[:i], streams[i+1:]...)
