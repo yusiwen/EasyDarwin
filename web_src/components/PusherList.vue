@@ -34,9 +34,9 @@
                     <el-table-column prop="id" label="ID" min-width="120"></el-table-column>
                     <el-table-column label="播放地址" min-width="240" show-overflow-tooltip>
                       <template slot-scope="scope">
-                        <span>
-                          <i class="fa fa-copy" role="button" v-clipboard="scope.row.url" title="点击拷贝" @success="$message({type:'success', message:'成功拷贝到粘贴板'})"></i>
-                          {{scope.row.url}}
+                        <span v-for="url in scope.row.url" :key="url" style="display: block;">
+                          <i class="fa fa-copy" role="button" v-clipboard="url" title="点击拷贝" @success="$message({type:'success', message:'成功拷贝到粘贴板'})"></i>
+                          {{url}}
                           </span>
                       </template>
                     </el-table-column>                    
