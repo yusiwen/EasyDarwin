@@ -2,11 +2,10 @@ package routers
 
 import (
 	"fmt"
-	"strings"
-
 	"github.com/EasyDarwin/EasyDarwin/rtsp"
 	"github.com/MeloQi/EasyGoLib/utils"
 	"github.com/gin-gonic/gin"
+	"strings"
 )
 
 /**
@@ -51,11 +50,18 @@ func (h *APIHandler) Pushers(c *gin.Context) {
 	pushers := make([]interface{}, 0)
 	for _, pusher := range rtsp.GetServer().GetPushers() {
 		port := pusher.Server().TCPPort
-		rtspUrl := fmt.Sprintf("rtsp://%s:%d%s", hostname, port, pusher.Path())
-		if port == 554 {
-			rtspUrl = fmt.Sprintf("rtsp://%s%s", hostname, pusher.Path())
+		rtspUrl := []string{fmt.Sprintf("rtsp://%s:%d%s", hostname, port, pusher.Path())}
+
+		flvPusher := pusher.FlvPusher
+		if flvPusher != nil {
+			flvPortStr := utils.Conf().Section("flv").Key("flv_addr").MustString(":7001")
+			if len(flvPortStr) > 0 && strings.Contains(flvPortStr, ":") {
+				flvPortStr = strings.Split(flvPortStr, ":")[1]
+			}
+			flvPath := fmt.Sprintf("/%s/%s.flv", flvPusher.AppName, flvPusher.RoomName)
+			rtspUrl = append(rtspUrl, fmt.Sprintf("http://%s:%s%s", hostname, flvPortStr, flvPath))
 		}
-		if form.Q != "" && !strings.Contains(strings.ToLower(rtspUrl), strings.ToLower(form.Q)) {
+		if form.Q != "" && !strings.Contains(strings.ToLower(rtspUrl[0]), strings.ToLower(form.Q)) {
 			continue
 		}
 		pushers = append(pushers, map[string]interface{}{
