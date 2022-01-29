@@ -73,10 +73,7 @@ func (s *FlvPusher) Start() error {
 	}
 
 	go func() {
-		ffmpegCmd := "ffmpeg"
-		if !utils.CommandExists(ffmpegCmd) {
-			ffmpegCmd = config.Conf().Section("codec").Key("ffmpeg_binary").MustString("ffmpeg")
-		}
+		ffmpegCmd := config.Conf().Section("codec").Key("ffmpeg_binary").MustString("ffmpeg")
 
 		ffmpegArgs := ffmpeg.KwArgs{"c:a": "aac", "f": "flv"}
 		if strings.EqualFold(s.SourceVCodec, "H264") {
