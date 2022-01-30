@@ -147,6 +147,10 @@ func fileInfo(skip int) string {
 		file = "<???>"
 		line = 1
 	} else {
+		// skip recursive self call
+		if strings.LastIndex(file, "/log/logger.go") >= 0 {
+			return fileInfo(skip + 2)
+		}
 		slash := strings.LastIndex(file, "/")
 		if slash >= 0 {
 			file = file[slash+1:]
