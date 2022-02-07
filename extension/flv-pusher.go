@@ -7,9 +7,13 @@ import (
 	"github.com/EasyDarwin/EasyDarwin/log"
 	"github.com/EasyDarwin/EasyDarwin/utils"
 	config "github.com/MeloQi/EasyGoLib/utils"
+	u "github.com/MeloQi/EasyGoLib/utils"
 	ffmpeg "github.com/u2takey/ffmpeg-go"
+	"gopkg.in/natefinch/lumberjack.v2"
+
 	"io/ioutil"
 	"net/http"
+	"path"
 	"strings"
 )
 
@@ -87,11 +91,24 @@ func (s *FlvPusher) Start() error {
 		if strings.TrimSpace(globalArgs) != "" {
 			stream = stream.GlobalArgs(strings.Split(globalArgs, " ")...)
 		}
-		stream = stream.OverWriteOutput().ErrorToStdOut()
+		stream = stream.OverWriteOutput()
+
+		// ffmpeg log file
+		fn := fmt.Sprintf("ffmpeg-%s-%s.log", s.AppName, s.RoomName)
+		lp := config.Conf().Section("codec").Key("ffmpeg_log_dir").MustString(u.CWD())
+		out := &lumberjack.Logger{
+			Filename:   path.Join(lp, fn),
+			MaxSize:    config.Conf().Section("codec").Key("ffmpeg_log_max_size").MustInt(100), // MB
+			MaxBackups: config.Conf().Section("codec").Key("ffmpeg_log_max_backups").MustInt(100),
+			MaxAge:     config.Conf().Section("codec").Key("ffmpeg_log_max_age").MustInt(100),     // days
+			Compress:   config.Conf().Section("codec").Key("ffmpeg_log_compress").MustBool(false), // disabled by default
+		}
+		stream = stream.WithOutput(out).WithErrorOutput(out)
+
 		s.Cancel = stream.GetCancelFunc()
 
 		log.Info(fmt.Sprintf("FlvPusher[%s][%s] starting...", s.AppName, s.RoomName))
-		err := stream.RunWith(ffmpegCmd)
+		err = stream.RunWith(ffmpegCmd)
 		if err != nil {
 			log.Error("failed to start ffmpeg: ", err)
 		}

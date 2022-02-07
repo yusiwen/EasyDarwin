@@ -23,6 +23,7 @@ require (
 	github.com/teris-io/shortid v0.0.0-20171029131806-771a37caa5cf
 	github.com/u2takey/ffmpeg-go v0.4.0
 	gopkg.in/go-playground/validator.v8 v8.18.2
+	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )
 
 require (
