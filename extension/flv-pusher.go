@@ -74,7 +74,7 @@ func (s *FlvPusher) Start() error {
 
 	go func() {
 		ffmpegCmd := config.Conf().Section("codec").Key("ffmpeg_binary").MustString("ffmpeg")
-
+		globalArgs := config.Conf().Section("codec").Key("ffmpeg_general_options").MustString("")
 		ffmpegArgs := ffmpeg.KwArgs{"c:a": "aac", "f": "flv"}
 		if strings.EqualFold(s.SourceVCodec, "H264") {
 			ffmpegArgs["c:v"] = "copy"
@@ -83,15 +83,19 @@ func (s *FlvPusher) Start() error {
 		}
 
 		stream := ffmpeg.Input(s.SourceUrl, ffmpeg.KwArgs{"rtsp_transport": "tcp"}).
-			Output(pushUrl, ffmpegArgs).OverWriteOutput().ErrorToStdOut()
+			Output(pushUrl, ffmpegArgs)
+		if strings.TrimSpace(globalArgs) != "" {
+			stream = stream.GlobalArgs(strings.Split(globalArgs, " ")...)
+		}
+		stream = stream.OverWriteOutput().ErrorToStdOut()
 		s.Cancel = stream.GetCancelFunc()
 
-		log.Info("FlvPusher starting...")
+		log.Info(fmt.Sprintf("FlvPusher[%s][%s] starting...", s.AppName, s.RoomName))
 		err := stream.RunWith(ffmpegCmd)
 		if err != nil {
 			log.Error("failed to start ffmpeg: ", err)
 		}
-		log.Info("FlvPusher finished")
+		log.Info(fmt.Sprintf("FlvPusher[%s][%s] finished...", s.AppName, s.RoomName))
 	}()
 	return nil
 }
