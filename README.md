@@ -93,6 +93,6 @@ $ npm run build:lin
 - If embedded flv server is used, you must add the build flag: `-ldflags "-X 'github.com/gwuhaolin/livego/configure.BypassInit=true'"` to bypass LiveGo standalone initialization.
 - Add `-config d:\\git\\EasyDarwin\\easydarwin.ini` to program arguments, change the file path according to your environment
 
-Run configurations in GoLand should look alike:
+Run configurations in GoLand should look like:
 
 ![image-20220209114302078](https://share.yusiwen.cn/public/pics/image-20220209114302078.png)
