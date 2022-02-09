@@ -24,6 +24,11 @@ My custom modded version of EasyDarwin
 - Rewrite logger
 - Enable settings for codecs for ffmpeg
 
+2022-02-08:
+
+- List flv links on web pages
+- Support more databases other than SQLite
+
 ## Build
 
 ### Pre-requisites
@@ -81,3 +86,13 @@ $ npm run build:www
 ```bash
 $ npm run build:lin
 ```
+
+### Note on Running/Debug in Goland or LiteIDE/VSCode
+
+- Copy `easydarwin-sample.ini` to `easydarwin.ini`, and change some options according to your environments.
+- If embedded flv server is used, you must add the build flag: `-ldflags "-X 'github.com/gwuhaolin/livego/configure.BypassInit=true'"` to bypass LiveGo standalone initialization.
+- Add `-config d:\\git\\EasyDarwin\\easydarwin.ini` to program arguments, change the file path according to your environment
+
+Run configurations in GoLand should look alike:
+
+![image-20220209114302078](https://share.yusiwen.cn/public/pics/image-20220209114302078.png)
