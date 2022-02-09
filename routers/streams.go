@@ -91,10 +91,11 @@ func (h *APIHandler) StreamStart(c *gin.Context) {
 		IdleTimeout:       form.IdleTimeout,
 		HeartbeatInterval: form.HeartbeatInterval,
 	}
-	if db.SQLite.Where(&models.Stream{URL: form.URL}).First(&models.Stream{}).RecordNotFound() {
-		db.SQLite.Create(&stream)
+	result := db.SQL.Where(&models.Stream{URL: form.URL}).First(&models.Stream{})
+	if result.RowsAffected == 0 {
+		db.SQL.Create(&stream)
 	} else {
-		db.SQLite.Save(&stream)
+		db.SQL.Save(&stream)
 	}
 	c.IndentedJSON(200, pusher.ID())
 }
@@ -125,7 +126,7 @@ func (h *APIHandler) StreamStop(c *gin.Context) {
 			if v.RTSPClient != nil {
 				var stream models.Stream
 				stream.URL = v.RTSPClient.URL
-				db.SQLite.Delete(stream)
+				db.SQL.Delete(stream)
 			}
 			return
 		}

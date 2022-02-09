@@ -130,9 +130,7 @@ func Init(assetFS *assetfs.AssetFS) (err error) {
 	Router.Use(Errors())
 	Router.Use(cors.Default())
 
-	store := sessions.NewGormStoreWithOptions(db.SQLite, sessions.GormStoreOptions{
-		TableName: "t_sessions",
-	}, []byte("EasyDarwin@2018"))
+	store := sessions.NewGormStoreWithOptions(db.SQL, sessions.GormStoreOptions{}, []byte("EasyDarwin@2018"))
 	tokenTimeout := utils.Conf().Section("http").Key("token_timeout").MustInt(7 * 86400)
 	store.Options(sessions.Options{HttpOnly: true, MaxAge: tokenTimeout, Path: "/"})
 	sessionHandle := sessions.Sessions("token", store)

@@ -344,7 +344,7 @@ func CheckAuth(authLine string, method string, sessionNonce string) error {
 		return fmt.Errorf("CheckAuth error : uri not found")
 	}
 	var user models.User
-	err := db.SQLite.Where("Username = ?", username).First(&user).Error
+	err := db.SQL.Where("Username = ?", username).First(&user).Error
 	if err != nil {
 		return fmt.Errorf("CheckAuth error : user not exists")
 	}

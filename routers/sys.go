@@ -85,9 +85,9 @@ func (h *APIHandler) ModifyPassword(c *gin.Context) {
 	}
 	sess := sessions.Default(c)
 	var user models.User
-	db.SQLite.First(&user, sess.Get("uid"))
+	db.SQL.First(&user, sess.Get("uid"))
 	if user.ID != "" && strings.EqualFold(form.OldPassword, user.Password) {
-		db.SQLite.Model(&user).Update("password", form.NewPassword)
+		db.SQL.Model(&user).Update("password", form.NewPassword)
 	} else {
 		c.AbortWithStatusJSON(http.StatusBadRequest, "原密码不正确")
 		return
@@ -165,7 +165,7 @@ func (h *APIHandler) Login(c *gin.Context) {
 		return
 	}
 	var user models.User
-	db.SQLite.Where(&models.User{Username: form.Username}).First(&user)
+	db.SQL.Where(&models.User{Username: form.Username}).First(&user)
 	if user.ID == "" {
 		c.AbortWithStatusJSON(401, "用户名或密码错误")
 		return
@@ -218,7 +218,7 @@ func (h *APIHandler) DefaultLoginInfo(c *gin.Context) {
 	sec := utils.Conf().Section("http")
 	defUser := sec.Key("default_username").MustString("admin")
 	defPass := sec.Key("default_password").MustString("admin")
-	db.SQLite.First(&user, "username = ?", defUser)
+	db.SQL.First(&user, "username = ?", defUser)
 	if utils.MD5(defPass) != user.Password {
 		defPass = ""
 	}

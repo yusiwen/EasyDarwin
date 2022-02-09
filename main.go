@@ -156,8 +156,8 @@ func (p *program) Start(s service.Service) (err error) {
 		log.Info("starting daemon for pulling streams")
 		for {
 			var streams []models.Stream
-			db.SQLite.Find(&streams)
-			if err := db.SQLite.Find(&streams).Error; err != nil {
+			db.SQL.Find(&streams)
+			if err := db.SQL.Find(&streams).Error; err != nil {
 				log.Error("find stream err: ", err)
 				return
 			}
