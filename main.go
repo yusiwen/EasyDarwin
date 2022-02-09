@@ -170,7 +170,7 @@ func (p *program) Start(s service.Service) (err error) {
 				if routers.BuildDateTime != "" {
 					agent = fmt.Sprintf("%s(%s)", agent, routers.BuildDateTime)
 				}
-				client, err := rtsp.NewRTSPClient(rtsp.GetServer(), v.URL, int64(v.HeartbeatInterval)*1000, agent)
+				client, err := rtsp.NewRTSPClient(v.ID, rtsp.GetServer(), v.URL, int64(v.HeartbeatInterval)*1000, agent)
 				if err != nil {
 					continue
 				}

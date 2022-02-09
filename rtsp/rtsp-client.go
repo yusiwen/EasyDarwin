@@ -6,7 +6,6 @@ import (
 	"crypto/md5"
 	"encoding/binary"
 	"fmt"
-	"github.com/EasyDarwin/EasyDarwin/log"
 	"io"
 	"net"
 	"net/url"
@@ -15,10 +14,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/teris-io/shortid"
-
+	"github.com/EasyDarwin/EasyDarwin/log"
 	"github.com/MeloQi/EasyGoLib/utils"
-
 	"github.com/pixelbender/go-sdp/sdp"
 )
 
@@ -68,7 +65,7 @@ func (client *RTSPClient) String() string {
 	return fmt.Sprintf("client[%s]", client.URL)
 }
 
-func NewRTSPClient(server *Server, rawUrl string, sendOptionMillis int64, agent string) (client *RTSPClient, err error) {
+func NewRTSPClient(id string, server *Server, rawUrl string, sendOptionMillis int64, agent string) (client *RTSPClient, err error) {
 	pullUrl, err := url.Parse(rawUrl)
 	if err != nil {
 		return
@@ -78,7 +75,7 @@ func NewRTSPClient(server *Server, rawUrl string, sendOptionMillis int64, agent 
 		Server:               server,
 		Stopped:              false,
 		URL:                  rawUrl,
-		ID:                   shortid.MustGenerate(),
+		ID:                   id,
 		Path:                 pullUrl.Path,
 		TransType:            TransTypeTcp,
 		vRTPChannel:          0,

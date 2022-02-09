@@ -2,17 +2,17 @@ package routers
 
 import (
 	"fmt"
-	"github.com/EasyDarwin/EasyDarwin/extension"
-	"github.com/EasyDarwin/EasyDarwin/log"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/EasyDarwin/EasyDarwin/extension"
+	"github.com/EasyDarwin/EasyDarwin/log"
 	"github.com/EasyDarwin/EasyDarwin/models"
-	"github.com/MeloQi/EasyGoLib/db"
-
 	"github.com/EasyDarwin/EasyDarwin/rtsp"
+	"github.com/MeloQi/EasyGoLib/db"
 	"github.com/gin-gonic/gin"
+	"github.com/teris-io/shortid"
 )
 
 /**
@@ -48,7 +48,8 @@ func (h *APIHandler) StreamStart(c *gin.Context) {
 	if BuildDateTime != "" {
 		agent = fmt.Sprintf("%s(%s)", agent, BuildDateTime)
 	}
-	client, err := rtsp.NewRTSPClient(rtsp.GetServer(), form.URL, int64(form.HeartbeatInterval)*1000, agent)
+	id := shortid.MustGenerate()
+	client, err := rtsp.NewRTSPClient(id, rtsp.GetServer(), form.URL, int64(form.HeartbeatInterval)*1000, agent)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
 		return
@@ -86,17 +87,17 @@ func (h *APIHandler) StreamStart(c *gin.Context) {
 
 	// save to db.
 	var stream = models.Stream{
+		ID:                id,
 		URL:               form.URL,
 		CustomPath:        form.CustomPath,
 		IdleTimeout:       form.IdleTimeout,
 		HeartbeatInterval: form.HeartbeatInterval,
 	}
-	result := db.SQL.Where(&models.Stream{URL: form.URL}).First(&models.Stream{})
-	if result.RowsAffected == 0 {
-		db.SQL.Create(&stream)
-	} else {
-		db.SQL.Save(&stream)
+	result := db.SQL.Create(&stream)
+	if result.Error != nil {
+		log.Warn(result.Error)
 	}
+
 	c.IndentedJSON(200, pusher.ID())
 }
 
