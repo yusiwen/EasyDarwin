@@ -29,6 +29,11 @@ My custom modded version of EasyDarwin
 - List flv links on web pages
 - Support more databases other than SQLite
 
+2022-02-10:
+
+- Rewrite rtsp recording
+- Add record APIs (RecordStart, RecordStop)
+
 ## Build
 
 ### Pre-requisites

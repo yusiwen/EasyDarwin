@@ -2,9 +2,16 @@ package routers
 
 import (
 	"bytes"
+	"fmt"
+	"github.com/EasyDarwin/EasyDarwin/models"
+	"github.com/EasyDarwin/EasyDarwin/rtsp"
+	"github.com/MeloQi/EasyGoLib/db"
+	"github.com/teris-io/shortid"
 	"math"
+	"net/http"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -185,4 +192,120 @@ func (h *APIHandler) RecordFiles(c *gin.Context) {
 	}
 	pr.Slice(form.Start, form.Limit)
 	c.IndentedJSON(200, pr)
+}
+
+/**
+ * @api {get} /api/v1/record/start 开始录制
+ * @apiGroup record
+ * @apiName RecordStart
+ * @apiParam {String} streamId 流ID
+ * @apiParam {String} tag Tag
+ * @apiSuccess (200) {String} file 视频文件地址
+ */
+func (h *APIHandler) RecordStart(c *gin.Context) {
+	type Form struct {
+		StreamId string `form:"streamId" binding:"required"`
+		Tag      string `form:"tag" binding:"required"`
+	}
+	var form = Form{}
+	err := c.Bind(&form)
+	if err != nil {
+		log.Error("record bind err: ", err)
+		c.IndentedJSON(http.StatusBadRequest, "request error")
+		return
+	}
+
+	var stream models.Stream
+	result := db.SQL.First(&stream, "id = ?", form.StreamId)
+	if result.Error != nil {
+		log.Error("stream not found", result.Error)
+		c.IndentedJSON(526, "Stream not found")
+		return
+	}
+
+	p := utils.Conf().Section("record").Key("output_dir_path").MustString(utils.CWD())
+	p = path.Join(p, form.Tag)
+	err = os.MkdirAll(p, os.ModePerm)
+	if err != nil {
+		log.Error("cannot create directory: ", p, err)
+		c.IndentedJSON(526, "File system error")
+		return
+	}
+	t := utils.Conf().Section("record").Key("output_file_format").MustString("m3u8")
+	format := rtsp.M3u8
+	if "mp4" == t {
+		format = rtsp.Mp4
+	}
+	f := path.Join(p, fmt.Sprintf("%s.%s", form.StreamId, format))
+
+	var count int64 = 0
+	db.SQL.Model(&models.Record{}).Where("stream_id = ? AND tag = ?", form.StreamId, form.Tag).Count(&count)
+	if count > 0 {
+		log.Error("record already exists")
+		c.IndentedJSON(526, "Record already exists")
+		return
+	}
+
+	recorderId := shortid.MustGenerate()
+	result = db.SQL.Create(&models.Record{
+		Id:        recorderId,
+		StreamId:  form.StreamId,
+		Tag:       form.Tag,
+		Output:    f,
+		StartTime: time.Now(),
+	})
+	if result.Error != nil {
+		log.Error("record db insert failed: ", result.Error)
+		c.IndentedJSON(526, "Record create failed")
+		return
+	}
+
+	stopHandler := func(r *rtsp.Recorder) {
+		db.SQL.Model(&models.Record{}).Where("id = ?", r.Id).Update("end_time", time.Now())
+		rtsp.GetServer().RemoveRecorder(r)
+	}
+	recorder := rtsp.NewRecorder(recorderId, stream.URL, f, stopHandler)
+	recorder.OutputFormat = format
+	rtsp.GetServer().AddRecorder(recorder)
+	c.IndentedJSON(200, f)
+}
+
+/**
+ * @api {get} /api/v1/record/stop 结束录制
+ * @apiGroup record
+ * @apiName RecordStop
+ * @apiParam {String} streamId 流ID
+ * @apiParam {String} tag Tag
+ * @apiSuccess (200) {String} file 视频文件地址
+ */
+func (h *APIHandler) RecordStop(c *gin.Context) {
+	type Form struct {
+		StreamId string `form:"streamId" binding:"required"`
+		Tag      string `form:"tag" binding:"required"`
+	}
+	var form = Form{}
+	err := c.Bind(&form)
+	if err != nil {
+		log.Error("record bind err: ", err)
+		c.IndentedJSON(http.StatusBadRequest, "request error")
+		return
+	}
+
+	var record models.Record
+	result := db.SQL.Where("stream_id = ? AND tag = ?", form.StreamId, form.Tag).First(&record)
+	if result.Error != nil {
+		log.Error("record not found", result.Error)
+		c.IndentedJSON(526, "Record not found")
+		return
+	}
+
+	r := rtsp.GetServer().GetRecorder(record.Id)
+	if r == nil {
+		log.Error("record not found: ", record.Id)
+		c.IndentedJSON(526, "Record not found")
+		return
+	}
+
+	r.Stop()
+	c.IndentedJSON(200, r.File)
 }

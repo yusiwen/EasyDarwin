@@ -26,6 +26,7 @@ type Pusher struct {
 	queue             []*RTPPack
 }
 
+//<editor-fold desc="Getters/Setters">
 func (pusher *Pusher) String() string {
 	if pusher.Session != nil {
 		return pusher.Session.String()
@@ -155,6 +156,8 @@ func (pusher *Pusher) Source() string {
 	}
 	return pusher.RTSPClient.URL
 }
+
+//</editor-fold>
 
 func NewClientPusher(client *RTSPClient) (pusher *Pusher) {
 	pusher = &Pusher{

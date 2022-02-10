@@ -16,7 +16,7 @@ func Init() (err error) {
 	if err != nil {
 		return
 	}
-	db.SQL.AutoMigrate(User{}, Stream{})
+	db.SQL.AutoMigrate(User{}, Stream{}, Record{})
 	count := int64(0)
 	sec := utils.Conf().Section("http")
 	defUser := sec.Key("default_username").MustString("admin")
