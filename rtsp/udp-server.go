@@ -135,7 +135,7 @@ func (s *UDPServer) SetupAudio() (err error) {
 				}
 				s.HandleRTP(pack)
 			} else {
-				logger.Error(fmt.Sprintf("udp server read audio pack error", err))
+				logger.Error(fmt.Sprintf("udp server read audio pack error: %v", err))
 				continue
 			}
 		}
@@ -149,10 +149,10 @@ func (s *UDPServer) SetupAudio() (err error) {
 		return
 	}
 	if err = s.AControlConn.SetReadBuffer(networkBuffer); err != nil {
-		logger.Error(fmt.Sprintf("udp server audio control conn set read buffer error, %v", err))
+		logger.Error(fmt.Sprintf("udp server audio control conn set read buffer error: %v", err))
 	}
 	if err = s.AControlConn.SetWriteBuffer(networkBuffer); err != nil {
-		logger.Error(fmt.Sprintf("udp server audio control conn set write buffer error, %v", err))
+		logger.Error(fmt.Sprintf("udp server audio control conn set write buffer error: %v", err))
 	}
 	la = s.AControlConn.LocalAddr().String()
 	strPort = la[strings.LastIndex(la, ":")+1:]

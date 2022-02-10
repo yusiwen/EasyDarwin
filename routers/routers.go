@@ -160,6 +160,8 @@ func Init(assetFS *assetfs.AssetFS) (err error) {
 
 		api.GET("/record/folders", API.RecordFolders)
 		api.GET("/record/files", API.RecordFiles)
+		api.GET("/record/start", API.RecordStart)
+		api.GET("/record/stop", API.RecordStop)
 	}
 
 	{
