@@ -156,7 +156,8 @@ func Init(assetFS *assetfs.AssetFS) (err error) {
 		api.GET("/players", API.Players)
 
 		api.GET("/stream/start", API.StreamStart)
-		api.GET("/stream/stop", API.StreamStop)
+		api.GET("/stream/stop", API.StreamStopOrStart)
+		api.GET("/stream/delete", API.StreamDelete)
 
 		api.GET("/record/folders", API.RecordFolders)
 		api.GET("/record/files", API.RecordFiles)

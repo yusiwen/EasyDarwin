@@ -36,7 +36,7 @@
                       <template slot-scope="scope">
                         <span v-for="url in scope.row.url" :key="url" style="display: block;">
                           <i class="fa fa-copy" role="button" v-clipboard="url" title="点击拷贝" @success="$message({type:'success', message:'成功拷贝到粘贴板'})"></i>
-                          {{url}}
+                            {{url}}
                           </span>
                       </template>
                     </el-table-column>                    
@@ -57,8 +57,26 @@
                     <el-table-column label="操作" min-width="120" fixed="right">
                         <template slot-scope="scope">
                             <div class="btn-group">
-                                <a role="button" class="btn btn-xs btn-danger" @click.prevent="stop(scope.row)">
+                                <a role="button" class="btn btn-xs btn-danger" @click.prevent="del(scope.row)">
+                                  <i class="fa fa-trash-o"></i> 删除
+                                </a>
+                            </div>
+                            <div class="btn-group">
+                                <a v-if="scope.row.inBytes > 0" role="button" class="btn btn-xs btn-danger" @click.prevent="stop(scope.row,0)">
                                   <i class="fa fa-stop"></i> 停止
+                                </a>
+                                <a v-else role="button" class="btn btn-xs" style="background-color: green;color: white;" @click.prevent="stop(scope.row,1)">
+                                  <i class="fa fa-hourglass-start"></i> 启动
+                                </a>
+                            </div>
+                            <div class="btn-group">
+                                <a role="button" class="btn btn-xs btn-danger" @click.prevent="video(scope.row)">
+                                  <i class="fa fa-toggle-right"></i> 录像
+                                </a>
+                            </div>
+                            <div class="btn-group">
+                                <a role="button" class="btn btn-xs btn-danger" @click.prevent="screen(scope.row)">
+                                  <i class="fa fa-circle-o"></i> 截图
                                 </a>
                             </div>
                         </template>
@@ -148,9 +166,20 @@ export default {
       if (val == undefined) return "-";
       return prettyBytes(val);
     },
-    stop(row) {
-      this.$confirm(`确认停止 ${row.path} ?`, "提示").then(() => {
+    stop(row,flag) {
+      this.$confirm(`确认${flag==0?"停止":"启动"} ${row.path} ?`, "提示").then(() => {
         $.get("/api/v1/stream/stop", {
+          id: row.id,
+          flag: flag
+        }).then(data => {
+          this.getPushers();
+        })
+      }).catch(() => {});
+    },
+    del(row) {
+      console.log(row.id)
+      this.$confirm(`确认删除 ${row.path} ?`, "提示").then(() => {
+        $.get("/api/v1/stream/delete", {
           id: row.id
         }).then(data => {
           this.getPushers();

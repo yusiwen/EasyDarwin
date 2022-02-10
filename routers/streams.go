@@ -84,7 +84,6 @@ func (h *APIHandler) StreamStart(c *gin.Context) {
 	}
 	log.Info("pull to push %v success ", form)
 	rtsp.GetServer().AddPusher(pusher)
-
 	// save to db.
 	var stream = models.Stream{
 		ID:                id,
@@ -92,6 +91,7 @@ func (h *APIHandler) StreamStart(c *gin.Context) {
 		CustomPath:        form.CustomPath,
 		IdleTimeout:       form.IdleTimeout,
 		HeartbeatInterval: form.HeartbeatInterval,
+		Status:            models.Running,
 	}
 	result := db.SQL.Create(&stream)
 	if result.Error != nil {
@@ -108,7 +108,48 @@ func (h *APIHandler) StreamStart(c *gin.Context) {
  * @apiParam {String} id 拉流的ID
  * @apiUse simpleSuccess
  */
-func (h *APIHandler) StreamStop(c *gin.Context) {
+func (h *APIHandler) StreamStopOrStart(c *gin.Context) {
+	type Form struct {
+		ID   string `form:"id" binding:"required"`
+		Flag string `form:"flag" binding:"required"`
+	}
+	var form Form
+	err := c.Bind(&form)
+	if err != nil {
+		log.Error("stop pull to push err: ", err)
+		return
+	}
+	pushers := rtsp.GetServer().GetPushers()
+	for _, v := range pushers {
+		if v.ID() == form.ID {
+			v.Stop()
+			c.IndentedJSON(200, "OK")
+			log.Info(fmt.Sprintf("Stop %v success ", v))
+			if v.RTSPClient != nil {
+				var stream models.Stream
+				stream.ID = form.ID
+				stream.URL = v.RTSPClient.URL
+				if "0" == form.Flag {
+					stream.Status = models.Stopped
+				} else {
+					stream.Status = models.Running
+				}
+				db.SQL.Model(&stream).Update("status", stream.Status)
+			}
+			return
+		}
+	}
+	c.AbortWithStatusJSON(http.StatusBadRequest, fmt.Sprintf("Pusher[%s] not found", form.ID))
+}
+
+/**
+ * @api {get} /api/v1/stream/stop 停止推流
+ * @apiGroup stream
+ * @apiName StreamStop
+ * @apiParam {String} id 拉流的ID
+ * @apiUse simpleSuccess
+ */
+func (h *APIHandler) StreamDelete(c *gin.Context) {
 	type Form struct {
 		ID string `form:"id" binding:"required"`
 	}
@@ -127,7 +168,7 @@ func (h *APIHandler) StreamStop(c *gin.Context) {
 			if v.RTSPClient != nil {
 				var stream models.Stream
 				stream.URL = v.RTSPClient.URL
-				db.SQL.Delete(stream)
+				db.SQL.Delete(stream, "id = ?", form.ID)
 			}
 			return
 		}
