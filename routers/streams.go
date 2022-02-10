@@ -172,7 +172,7 @@ func (h *APIHandler) StreamToggle(c *gin.Context) {
  * @apiParam {String} id 拉流的ID
  * @apiUse simpleSuccess
  */
-func (h *APIHandler) StreamDelete(c *gin.Context) {
+func (h *APIHandler) StreamStop(c *gin.Context) {
 	type Form struct {
 		ID string `form:"id" binding:"required"`
 	}
