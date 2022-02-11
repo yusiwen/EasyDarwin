@@ -485,7 +485,7 @@ func (session *Session) handleRequest(req *Request) {
 		}
 		if addPusher {
 			session.Pusher = NewPusher(session)
-			addedToServer := session.Server.AddPusher(session.Pusher)
+			addedToServer := session.Server.AddPusher(session.Pusher, true)
 			if !addedToServer {
 				logger.Error("reject pusher.")
 				res.StatusCode = 406

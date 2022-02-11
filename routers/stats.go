@@ -50,20 +50,24 @@ func (h *APIHandler) Pushers(c *gin.Context) {
 	pushers := make([]interface{}, 0)
 	for _, pusher := range rtsp.GetServer().GetPushers() {
 		port := pusher.Server().TCPPort
-		rtspUrl := []string{fmt.Sprintf("rtsp://%s:%d%s", hostname, port, pusher.Path())}
+		rtspUrl := []string{}
+		if !pusher.Stopped() {
+			rtspUrl = append(rtspUrl, fmt.Sprintf("rtsp://%s:%d%s", hostname, port, pusher.Path()))
 
-		flvPusher := pusher.FlvPusher
-		if flvPusher != nil {
-			flvPortStr := utils.Conf().Section("flv").Key("flv_addr").MustString(":7001")
-			if len(flvPortStr) > 0 && strings.Contains(flvPortStr, ":") {
-				flvPortStr = strings.Split(flvPortStr, ":")[1]
+			flvPusher := pusher.FlvPusher
+			if flvPusher != nil {
+				flvPortStr := utils.Conf().Section("flv").Key("flv_addr").MustString(":7001")
+				if len(flvPortStr) > 0 && strings.Contains(flvPortStr, ":") {
+					flvPortStr = strings.Split(flvPortStr, ":")[1]
+				}
+				flvPath := fmt.Sprintf("/%s/%s.flv", flvPusher.AppName, flvPusher.RoomName)
+				rtspUrl = append(rtspUrl, fmt.Sprintf("http://%s:%s%s", hostname, flvPortStr, flvPath))
 			}
-			flvPath := fmt.Sprintf("/%s/%s.flv", flvPusher.AppName, flvPusher.RoomName)
-			rtspUrl = append(rtspUrl, fmt.Sprintf("http://%s:%s%s", hostname, flvPortStr, flvPath))
+			if form.Q != "" && !strings.Contains(strings.ToLower(rtspUrl[0]), strings.ToLower(form.Q)) {
+				continue
+			}
 		}
-		if form.Q != "" && !strings.Contains(strings.ToLower(rtspUrl[0]), strings.ToLower(form.Q)) {
-			continue
-		}
+
 		pushers = append(pushers, map[string]interface{}{
 			"id":        pusher.ID(),
 			"url":       rtspUrl,
@@ -74,6 +78,7 @@ func (h *APIHandler) Pushers(c *gin.Context) {
 			"outBytes":  pusher.OutBytes(),
 			"startAt":   utils.DateTime(pusher.StartAt()),
 			"onlines":   len(pusher.GetPlayers()),
+			"stopped":   pusher.Stopped(),
 		})
 	}
 	pr := utils.NewPageResult(pushers)

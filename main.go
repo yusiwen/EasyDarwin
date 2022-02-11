@@ -156,9 +156,9 @@ func (p *program) Start(s service.Service) (err error) {
 		log.Info("starting daemon for pulling streams")
 		for {
 			var streams []models.Stream
-			db.SQL.Find(&streams)
-			if err := db.SQL.Find(&streams).Error; err != nil {
-				log.Error("find stream err: ", err)
+			result := db.SQL.Find(&streams)
+			if result.Error != nil {
+				log.Error("find stream err: ", result.Error)
 				return
 			}
 			for i := len(streams) - 1; i > -1; i-- {
@@ -176,18 +176,23 @@ func (p *program) Start(s service.Service) (err error) {
 				}
 				client.CustomPath = v.CustomPath
 
-				err = client.Start(time.Duration(v.IdleTimeout) * time.Second)
-				if err != nil {
-					log.Error("pull stream err: ", err)
-					continue
+				if v.Status == models.Running {
+					err = client.Start(time.Duration(v.IdleTimeout) * time.Second)
+					if err != nil {
+						log.Error("pull stream err: ", err)
+						continue
+					}
 				}
+
 				flvPusher := extension.NewFlvPusher(client.URL, client.ACodec, client.VCodec, extension.GetFlvServer(),
 					"live", client.ID)
 				pusher := rtsp.NewClientPusher(client)
 				pusher.FlvPusher = flvPusher
-				rtsp.GetServer().AddPusher(pusher)
-				//streams = streams[0:i]
-				//streams = append(streams[:i], streams[i+1:]...)
+				if v.Status == models.Running {
+					rtsp.GetServer().AddPusher(pusher, true)
+				} else {
+					rtsp.GetServer().AddPusher(pusher, false)
+				}
 			}
 			time.Sleep(10 * time.Second)
 		}

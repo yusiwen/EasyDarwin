@@ -175,7 +175,6 @@ func NewClientPusher(client *RTSPClient) (pusher *Pusher) {
 	})
 	client.StopHandles = append(client.StopHandles, func() {
 		pusher.ClearPlayer()
-		pusher.Server().RemovePusher(pusher)
 		pusher.cond.Broadcast()
 	})
 	return
