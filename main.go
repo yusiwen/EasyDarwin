@@ -210,9 +210,6 @@ func main() {
 	flag.Parse()
 	tail := flag.Args()
 
-	t := utils.Conf().Section("flv").Key("enabled").String()
-	fmt.Println(t)
-
 	log.Info("git commit code: ", gitCommitCode)
 	log.Info("build date: ", buildDateTime)
 	routers.BuildVersion = fmt.Sprintf("%s.%s", routers.BuildVersion, gitCommitCode)
