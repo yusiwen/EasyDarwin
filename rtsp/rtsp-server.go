@@ -83,7 +83,7 @@ func (server *Server) Stop() {
 	server.pushersLock.Unlock()
 }
 
-func (server *Server) AddPusher(pusher *Pusher) bool {
+func (server *Server) AddPusher(pusher *Pusher, start bool) bool {
 	added := false
 	server.pushersLock.Lock()
 	_, ok := server.pushers[pusher.Path()]
@@ -95,7 +95,7 @@ func (server *Server) AddPusher(pusher *Pusher) bool {
 		added = false
 	}
 	server.pushersLock.Unlock()
-	if added {
+	if added && start {
 		go pusher.Start()
 	}
 	return added

@@ -62,7 +62,7 @@
                                 </a>
                             </div>
                             <div class="btn-group">
-                                <a v-if="scope.row.inBytes > 0" role="button" class="btn btn-xs btn-danger" @click.prevent="stop(scope.row,0)">
+                                <a v-if="!scope.row.stopped" role="button" class="btn btn-xs btn-danger" @click.prevent="toggle(scope.row)">
                                   <i class="fa fa-stop"></i> 停止
                                 </a>
                                 <a v-else role="button" class="btn btn-xs" style="background-color: green;color: white;" @click.prevent="stop(scope.row,1)">
@@ -170,11 +170,10 @@ export default {
       if (val == undefined) return "-";
       return prettyBytes(val);
     },
-    stop(row,flag) {
-      this.$confirm(`确认${flag==0?"停止":"启动"} ${row.path} ?`, "提示").then(() => {
-        $.get("/api/v1/stream/stop", {
-          id: row.id,
-          flag: flag
+    toggle(row) {
+      this.$confirm(`确认${!row.stopped?"停止":"启动"} ${row.path} ?`, "提示").then(() => {
+        $.get("/api/v1/stream/toggle", {
+          id: row.id
         }).then(data => {
           this.getPushers();
         })
@@ -215,7 +214,6 @@ export default {
       }).catch(() => {});
     },
     screen(row) {
-      console.log(row.id)
       this.$confirm(`确认截屏 ${row.path} ?`, "提示").then(() => {
         var date = Date.now();
         console.log(row.id,date)
@@ -225,8 +223,7 @@ export default {
         }).then(data => {
           this.getPushers();
         })
-      }).catch(() => {});
-    }
+     }).catch(() => {});
   },
   beforeRouteEnter(to, from, next) {
     next(vm => {

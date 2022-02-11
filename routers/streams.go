@@ -83,7 +83,7 @@ func (h *APIHandler) StreamStart(c *gin.Context) {
 		return
 	}
 	log.Info("pull to push %v success ", form)
-	rtsp.GetServer().AddPusher(pusher)
+	rtsp.GetServer().AddPusher(pusher, true)
 	// save to db.
 	var stream = models.Stream{
 		ID:                id,
@@ -102,16 +102,15 @@ func (h *APIHandler) StreamStart(c *gin.Context) {
 }
 
 /**
- * @api {get} /api/v1/stream/stop 停止推流
+ * @api {get} /api/v1/stream/toggle 启停推流
  * @apiGroup stream
- * @apiName StreamStop
+ * @apiName StreamToggle
  * @apiParam {String} id 拉流的ID
  * @apiUse simpleSuccess
  */
-func (h *APIHandler) StreamStopOrStart(c *gin.Context) {
+func (h *APIHandler) StreamToggle(c *gin.Context) {
 	type Form struct {
-		ID   string `form:"id" binding:"required"`
-		Flag string `form:"flag" binding:"required"`
+		ID string `form:"id" binding:"required"`
 	}
 	var form Form
 	err := c.Bind(&form)
@@ -122,20 +121,44 @@ func (h *APIHandler) StreamStopOrStart(c *gin.Context) {
 	pushers := rtsp.GetServer().GetPushers()
 	for _, v := range pushers {
 		if v.ID() == form.ID {
-			v.Stop()
-			c.IndentedJSON(200, "OK")
-			log.Info(fmt.Sprintf("Stop %v success ", v))
-			if v.RTSPClient != nil {
+			if !v.Stopped() {
+				// stop
+				v.Stop()
+
 				var stream models.Stream
 				stream.ID = form.ID
-				stream.URL = v.RTSPClient.URL
-				if "0" == form.Flag {
-					stream.Status = models.Stopped
-				} else {
-					stream.Status = models.Running
-				}
+				stream.Status = models.Stopped
 				db.SQL.Model(&stream).Update("status", stream.Status)
+
+				c.IndentedJSON(200, "OK")
+				log.Info(fmt.Sprintf("Stop %v success ", v))
+			} else {
+				// start
+				var stream models.Stream
+				r := db.SQL.Model(&models.Stream{}).Where("id = ?", form.ID).First(&stream)
+				if r.Error != nil {
+					c.IndentedJSON(526, "stream not found")
+					return
+				}
+
+				if v.RTSPClient != nil {
+					err := v.RTSPClient.Start(time.Duration(stream.IdleTimeout) * time.Second)
+					if err != nil {
+						log.Error("pull stream err: ", err)
+						c.IndentedJSON(526, "pull stream err")
+						return
+					}
+				}
+
+				go v.Start()
+
+				stream.Status = models.Running
+				db.SQL.Model(&stream).Update("status", stream.Status)
+
+				c.IndentedJSON(200, "OK")
+				log.Info(fmt.Sprintf("Start %v success ", v))
 			}
+
 			return
 		}
 	}
@@ -162,9 +185,12 @@ func (h *APIHandler) StreamDelete(c *gin.Context) {
 	pushers := rtsp.GetServer().GetPushers()
 	for _, v := range pushers {
 		if v.ID() == form.ID {
-			v.Stop()
+			if !v.Stopped() {
+				v.Stop()
+				log.Info(fmt.Sprintf("Stop %v success ", v))
+			}
+			rtsp.GetServer().RemovePusher(v)
 			c.IndentedJSON(200, "OK")
-			log.Info(fmt.Sprintf("Stop %v success ", v))
 			if v.RTSPClient != nil {
 				var stream models.Stream
 				stream.URL = v.RTSPClient.URL

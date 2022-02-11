@@ -73,7 +73,7 @@ func NewRTSPClient(id string, server *Server, rawUrl string, sendOptionMillis in
 	debugLogEnable := utils.Conf().Section("rtsp").Key("debug_log_enable").MustInt(0)
 	client = &RTSPClient{
 		Server:               server,
-		Stopped:              false,
+		Stopped:              true,
 		URL:                  rawUrl,
 		ID:                   id,
 		Path:                 pullUrl.Path,
@@ -492,6 +492,7 @@ func (client *RTSPClient) startStream() {
 }
 
 func (client *RTSPClient) Start(timeout time.Duration) (err error) {
+	client.Stopped = false
 	if timeout == 0 {
 		timeoutMillis := utils.Conf().Section("rtsp").Key("timeout").MustInt(0)
 		timeout = time.Duration(timeoutMillis) * time.Millisecond
