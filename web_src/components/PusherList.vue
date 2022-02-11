@@ -148,6 +148,9 @@ export default {
       }).then(data => {
         this.total = data.total;
         this.pushers = data.rows;
+        this.pushers.forEach(e => {
+          this.vstatus.set(e.id,sessionStorage.getItem(e.id))
+        });
       });
     },
     doSearch(page = 1) {
@@ -200,6 +203,7 @@ export default {
           }).then(data => {
             this.getPushers();
             this.vstatus.set(row.id,date)
+            sessionStorage.setItem(row.id,date)
             console.info(this.vstatus)
           })
         }else{
@@ -209,6 +213,7 @@ export default {
           }).then(data => {
             this.getPushers();
             this.vstatus.delete(row.id)
+            sessionStorage.removeItem(row.id)
           })
         }
       }).catch(() => {});
@@ -223,23 +228,24 @@ export default {
         }).then(data => {
           this.getPushers();
         })
-     }).catch(() => {});
-  },
-  beforeRouteEnter(to, from, next) {
-    next(vm => {
-      vm.q = to.query.q || "";
-      vm.currentPage = parseInt(to.params.page) || 1;
-    });
-  },
-  beforeRouteUpdate(to, from, next) {
-    next();
-    this.$nextTick(() => {
-      this.q = to.query.q || "";
-      this.currentPage = parseInt(to.params.page) || 1;
-      this.pushers = [];
-      this.getPushers();
-    });
+      }).catch(() => {});
+    },
+    beforeRouteEnter(to, from, next) {
+      next(vm => {
+        vm.q = to.query.q || "";
+        vm.currentPage = parseInt(to.params.page) || 1;
+      });
+    },
+    beforeRouteUpdate(to, from, next) {
+      next();
+      this.$nextTick(() => {
+        this.q = to.query.q || "";
+        this.currentPage = parseInt(to.params.page) || 1;
+        this.pushers = [];
+        this.getPushers();
+      });
+    }
   }
-};
+}
 </script>
 
