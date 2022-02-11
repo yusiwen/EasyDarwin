@@ -148,6 +148,9 @@ export default {
       }).then(data => {
         this.total = data.total;
         this.pushers = data.rows;
+        this.pushers.forEach(e => {
+          this.vstatus.set(e.id,sessionStorage.getItem(e.id))
+        });
       });
     },
     doSearch(page = 1) {
