@@ -3,10 +3,7 @@ package routers
 import (
 	"bytes"
 	"fmt"
-	"github.com/EasyDarwin/EasyDarwin/models"
-	"github.com/EasyDarwin/EasyDarwin/rtsp"
-	"github.com/MeloQi/EasyGoLib/db"
-	"github.com/teris-io/shortid"
+
 	"math"
 	"net/http"
 	"os"
@@ -19,8 +16,13 @@ import (
 	"time"
 
 	"github.com/EasyDarwin/EasyDarwin/log"
+	"github.com/EasyDarwin/EasyDarwin/models"
+	"github.com/EasyDarwin/EasyDarwin/rtsp"
+	u "github.com/EasyDarwin/EasyDarwin/utils"
+	"github.com/MeloQi/EasyGoLib/db"
 	"github.com/MeloQi/EasyGoLib/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/teris-io/shortid"
 )
 
 /**
@@ -49,7 +51,7 @@ import (
  * @apiSuccess (200) {String} rows.folder	录像文件夹名称
  */
 func (h *APIHandler) RecordFolders(c *gin.Context) {
-	mp4Path := utils.Conf().Section("rtsp").Key("m3u8_dir_path").MustString("")
+	mp4Path := utils.Conf().Section("record").Key("output_dir_path").MustString("")
 	form := utils.NewPageForm()
 	if err := c.Bind(form); err != nil {
 		log.Error("record folder bind err: ", err)
@@ -117,15 +119,16 @@ func (h *APIHandler) RecordFiles(c *gin.Context) {
 		return
 	}
 
+	hostname := u.GetHostName()
 	files := make([]interface{}, 0)
-	mp4Path := utils.Conf().Section("rtsp").Key("m3u8_dir_path").MustString("")
+	mp4Path := utils.Conf().Section("record").Key("output_dir_path").MustString("")
 	if mp4Path != "" {
-		ffmpegPath := utils.Conf().Section("rtsp").Key("ffmpeg_path").MustString("")
+		ffmpegPath := utils.Conf().Section("codec").Key("ffmpeg_binary").MustString("")
 		ffmpegFolder, executable := filepath.Split(ffmpegPath)
 		split := strings.Split(executable, ".")
 		suffix := ""
 		if len(split) > 1 {
-			suffix = split[1]
+			suffix = fmt.Sprintf(".%s", split[1])
 		}
 		ffprobe := ffmpegFolder + "ffprobe" + suffix
 		folder := filepath.Join(mp4Path, form.Folder)
@@ -146,7 +149,9 @@ func (h *APIHandler) RecordFiles(c *gin.Context) {
 				if info.Name() == ".DS_Store" {
 					return nil
 				}
-				if !strings.HasSuffix(strings.ToLower(info.Name()), ".m3u8") && !strings.HasSuffix(strings.ToLower(info.Name()), ".ts") {
+				if !strings.HasSuffix(strings.ToLower(info.Name()), ".m3u8") &&
+					!strings.HasSuffix(strings.ToLower(info.Name()), ".ts") &&
+					!strings.HasSuffix(strings.ToLower(info.Name()), ".mkv") {
 					return nil
 				}
 				cmd := exec.Command(ffprobe, "-i", path)
@@ -173,8 +178,10 @@ func (h *APIHandler) RecordFiles(c *gin.Context) {
 					duration += time.Duration(millis) * time.Millisecond
 				}
 
+				_, fn := filepath.Split(path)
+				retPath := fmt.Sprintf("%s/records/%s/%s", hostname, form.Folder, fn)
 				*files = append(*files, map[string]interface{}{
-					"path":           path[len(mp4Path):],
+					"path":           retPath,
 					"durationMillis": duration / time.Millisecond,
 					"duration":       durationStr})
 				return nil
@@ -194,18 +201,25 @@ func (h *APIHandler) RecordFiles(c *gin.Context) {
 	c.IndentedJSON(200, pr)
 }
 
+type recordResp struct {
+	Status string `json:"status"`
+	Url    string `json:"url"`
+}
+
 /**
  * @api {get} /api/v1/record/start 开始录制
  * @apiGroup record
  * @apiName RecordStart
  * @apiParam {String} streamId 流ID
  * @apiParam {String} tag Tag
+ * @apiParam {String} [format] 视频文件格式，可用：mkv, m3u8, 缺省m3u8
  * @apiSuccess (200) {String} file 视频文件地址
  */
 func (h *APIHandler) RecordStart(c *gin.Context) {
 	type Form struct {
 		StreamId string `form:"streamId" binding:"required"`
 		Tag      string `form:"tag" binding:"required"`
+		Format   string `form:"format"`
 	}
 	var form = Form{}
 	err := c.Bind(&form)
@@ -223,6 +237,7 @@ func (h *APIHandler) RecordStart(c *gin.Context) {
 		return
 	}
 
+	// output folder
 	p := utils.Conf().Section("record").Key("output_dir_path").MustString(utils.CWD())
 	p = path.Join(p, form.Tag)
 	err = os.MkdirAll(p, os.ModePerm)
@@ -231,12 +246,14 @@ func (h *APIHandler) RecordStart(c *gin.Context) {
 		c.IndentedJSON(526, "File system error")
 		return
 	}
-	t := utils.Conf().Section("record").Key("output_file_format").MustString("m3u8")
-	format := rtsp.M3u8
-	if "mp4" == t {
-		format = rtsp.Mp4
+
+	// format
+	format := rtsp.ParseRecordFormat(utils.Conf().Section("record").Key("default_file_format").MustString("m3u8"))
+	if format != rtsp.Mkv && "mkv" == form.Format {
+		format = rtsp.Mkv
 	}
-	f := path.Join(p, fmt.Sprintf("%s.%s", form.StreamId, format))
+	fn := fmt.Sprintf("%s-%s.%s", form.StreamId, time.Now().Format("20060102150405"), format)
+	f := path.Join(p, fn)
 
 	var count int64 = 0
 	db.SQL.Model(&models.Record{}).Where("stream_id = ? AND tag = ?", form.StreamId, form.Tag).Count(&count)
@@ -251,7 +268,7 @@ func (h *APIHandler) RecordStart(c *gin.Context) {
 		Id:        recorderId,
 		StreamId:  form.StreamId,
 		Tag:       form.Tag,
-		Output:    f,
+		Output:    fn,
 		StartTime: time.Now(),
 	})
 	if result.Error != nil {
@@ -267,7 +284,13 @@ func (h *APIHandler) RecordStart(c *gin.Context) {
 	recorder := rtsp.NewRecorder(recorderId, stream.URL, f, stopHandler)
 	recorder.OutputFormat = format
 	rtsp.GetServer().AddRecorder(recorder)
-	c.IndentedJSON(200, f)
+
+	retPath := fmt.Sprintf("%s/records/%s/%s", u.GetHostName(), form.Tag, fn)
+	rsp := recordResp{
+		Status: "started",
+		Url:    retPath,
+	}
+	c.IndentedJSON(200, rsp)
 }
 
 /**
@@ -307,5 +330,67 @@ func (h *APIHandler) RecordStop(c *gin.Context) {
 	}
 
 	r.Stop()
-	c.IndentedJSON(200, r.File)
+
+	retPath := fmt.Sprintf("%s/records/%s/%s", u.GetHostName(), form.Tag, record.Output)
+	rsp := recordResp{
+		Status: "stopped",
+		Url:    retPath,
+	}
+	c.IndentedJSON(200, rsp)
+}
+
+/**
+ * @api {get} /api/v1/record/screenshot 截屏
+ * @apiGroup record
+ * @apiName Screenshot
+ * @apiParam {String} streamId 流ID
+ * @apiParam {String} tag Tag
+ * @apiSuccess (200) {String} file 图像文件地址
+ */
+func (h *APIHandler) Screenshot(c *gin.Context) {
+	type Form struct {
+		StreamId string `form:"streamId" binding:"required"`
+		Tag      string `form:"tag" binding:"required"`
+	}
+	var form = Form{}
+	err := c.Bind(&form)
+	if err != nil {
+		log.Error("record bind err: ", err)
+		c.IndentedJSON(http.StatusBadRequest, "request error")
+		return
+	}
+
+	var stream models.Stream
+	result := db.SQL.First(&stream, "id = ?", form.StreamId)
+	if result.Error != nil {
+		log.Error("stream not found", result.Error)
+		c.IndentedJSON(526, "Stream not found")
+		return
+	}
+
+	p := utils.Conf().Section("record").Key("output_dir_path").MustString(utils.CWD())
+	p = path.Join(p, form.Tag)
+	err = os.MkdirAll(p, os.ModePerm)
+	if err != nil {
+		log.Error("cannot create directory: ", p, err)
+		c.IndentedJSON(526, "File system error")
+		return
+	}
+	fn := fmt.Sprintf("%s-%s.jpeg", form.StreamId, time.Now().Format("20060102150405"))
+	f := path.Join(p, fn)
+
+	recorderId := shortid.MustGenerate()
+	stopHandler := func(r *rtsp.Recorder) {
+		rtsp.GetServer().RemoveRecorder(r)
+	}
+	recorder := rtsp.NewRecorder(recorderId, stream.URL, f, stopHandler)
+	recorder.OutputFormat = rtsp.Jpeg
+	rtsp.GetServer().AddRecorder(recorder)
+
+	retPath := fmt.Sprintf("%s/records/%s/%s", u.GetHostName(), form.Tag, fn)
+	rsp := recordResp{
+		Status: "started",
+		Url:    retPath,
+	}
+	c.IndentedJSON(200, rsp)
 }

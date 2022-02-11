@@ -3,6 +3,7 @@ package rtsp
 import (
 	"context"
 	"errors"
+	"strings"
 	"sync"
 
 	"github.com/EasyDarwin/EasyDarwin/log"
@@ -15,12 +16,25 @@ type RecorderStopHandler func(r *Recorder)
 type RecordFormat int
 
 const (
-	Mp4 RecordFormat = iota
+	Mkv RecordFormat = iota
 	M3u8
+	Jpeg
 )
 
 func (f RecordFormat) String() string {
-	return [...]string{"mp4", "m3u8"}[f]
+	return [...]string{"mkv", "m3u8", "jpeg"}[f]
+}
+
+func ParseRecordFormat(s string) RecordFormat {
+	s = strings.ToLower(s)
+	switch s {
+	case "mkv":
+		return Mkv
+	case "jpeg":
+		return Mkv
+	default:
+		return M3u8
+	}
 }
 
 type Recorder struct {
@@ -71,10 +85,16 @@ func (r *Recorder) Start() error {
 
 			// start recording
 			ffmpegCmd := config.Conf().Section("codec").Key("ffmpeg_binary").MustString("ffmpeg")
-			outputArgs := ffmpeg.KwArgs{"c:v": "copy", "c:a": "copy"}
-			if r.OutputFormat == M3u8 {
-				outputArgs["hls_time"] = config.Conf().Section("record").Key("ts_duration_second").MustString("60")
-				outputArgs["hls_list_size"] = "0"
+			outputArgs := ffmpeg.KwArgs{}
+			if r.OutputFormat == Jpeg {
+				outputArgs["vframes"] = "1"
+			} else {
+				outputArgs["c:v"] = "copy"
+				outputArgs["c:a"] = "copy"
+				if r.OutputFormat == M3u8 {
+					outputArgs["hls_time"] = config.Conf().Section("record").Key("ts_duration_second").MustString("60")
+					outputArgs["hls_list_size"] = "0"
+				}
 			}
 
 			stream := ffmpeg.Input(r.URL, ffmpeg.KwArgs{"re": "", "rtsp_transport": "tcp"}).
