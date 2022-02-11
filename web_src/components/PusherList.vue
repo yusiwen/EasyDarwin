@@ -84,13 +84,13 @@
                             </div>
                         </template>
                     </el-table-column>
-                </el-table>          
+                </el-table>
             </div>
             <div class="box-footer clearfix" v-if="total > 0">
                 <el-pagination layout="prev,pager,next" class="pull-right" :total="total" :page-size.sync="pageSize" :current-page.sync="currentPage"></el-pagination>
             </div>
-        </div>     
-        <PullRTSPDlg ref="pullRTSPDlg" @submit="getPushers"></PullRTSPDlg>          
+        </div>
+        <PullRTSPDlg ref="pullRTSPDlg" @submit="getPushers"></PullRTSPDlg>
     </div>
 </template>
 
@@ -136,7 +136,7 @@ export default {
     currentPage: function(newVal, oldVal) {
       this.doSearch(newVal);
     }
-  },  
+  },
   methods: {
     getPushers() {
       $.get("/api/v1/pushers", {
@@ -163,7 +163,7 @@ export default {
     },
     doDelaySearch: _.debounce(function() {
       this.doSearch();
-    }, 500),    
+    }, 500),
     sortChange(data) {
       this.sort = data.prop;
       this.order = data.order;
