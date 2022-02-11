@@ -162,12 +162,13 @@ func Init(assetFS *assetfs.AssetFS) (err error) {
 		api.GET("/record/files", API.RecordFiles)
 		api.GET("/record/start", API.RecordStart)
 		api.GET("/record/stop", API.RecordStop)
+		api.GET("/record/screenshot", API.Screenshot)
 	}
 
 	{
-		mp4Path := utils.Conf().Section("rtsp").Key("m3u8_dir_path").MustString("")
+		mp4Path := utils.Conf().Section("record").Key("output_dir_path").MustString("")
 		if len(mp4Path) != 0 {
-			Router.Use(static.Serve("/record", static.LocalFile(mp4Path, true)))
+			Router.Use(static.Serve("/records", static.LocalFile(mp4Path, false)))
 		}
 	}
 

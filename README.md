@@ -34,6 +34,13 @@ My custom modded version of EasyDarwin
 - Rewrite rtsp recording
 - Add record APIs (RecordStart, RecordStop)
 
+2022-02-11：
+
+- Support record stream to mkv format
+- Remove mp4 format due to corrupted file after cancelling ffmpeg process
+- Add screenshot API
+- Add hostname options to set hostname when deployed behind reverse proxy
+
 ## Build
 
 ### Pre-requisites
