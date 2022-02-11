@@ -136,7 +136,7 @@ export default {
     currentPage: function(newVal, oldVal) {
       this.doSearch(newVal);
     }
-  },
+  },  
   methods: {
     getPushers() {
       $.get("/api/v1/pushers", {
