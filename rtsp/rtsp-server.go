@@ -9,15 +9,13 @@ import (
 )
 
 type Server struct {
-	TCPListener    *net.TCPListener
-	TCPPort        int
-	Stopped        bool
-	pushers        map[string]*Pusher // Path <-> Pusher
-	pushersLock    sync.RWMutex
-	recorders      map[string]*Recorder // id <-> Recorder
-	recordersLock  sync.RWMutex
-	addPusherCh    chan *Pusher
-	removePusherCh chan *Pusher
+	TCPListener   *net.TCPListener
+	TCPPort       int
+	Stopped       bool
+	pushers       map[string]*Pusher // Path <-> Pusher
+	pushersLock   sync.RWMutex
+	recorders     map[string]*Recorder // id <-> Recorder
+	recordersLock sync.RWMutex
 }
 
 var instance *Server = nil
@@ -25,12 +23,10 @@ var instance *Server = nil
 func GetServer() *Server {
 	if instance == nil {
 		instance = &Server{
-			Stopped:        true,
-			TCPPort:        utils.Conf().Section("rtsp").Key("port").MustInt(554),
-			pushers:        make(map[string]*Pusher),
-			recorders:      make(map[string]*Recorder),
-			addPusherCh:    make(chan *Pusher),
-			removePusherCh: make(chan *Pusher),
+			Stopped:   true,
+			TCPPort:   utils.Conf().Section("rtsp").Key("port").MustInt(554),
+			pushers:   make(map[string]*Pusher),
+			recorders: make(map[string]*Recorder),
 		}
 	}
 	return instance
@@ -85,9 +81,6 @@ func (server *Server) Stop() {
 	server.pushersLock.Lock()
 	server.pushers = make(map[string]*Pusher)
 	server.pushersLock.Unlock()
-
-	close(server.addPusherCh)
-	close(server.removePusherCh)
 }
 
 func (server *Server) AddPusher(pusher *Pusher) bool {
@@ -104,7 +97,6 @@ func (server *Server) AddPusher(pusher *Pusher) bool {
 	server.pushersLock.Unlock()
 	if added {
 		go pusher.Start()
-		server.addPusherCh <- pusher
 	}
 	return added
 }
@@ -127,17 +119,12 @@ func (server *Server) TryAttachToPusher(session *Session) (int, *Pusher) {
 }
 
 func (server *Server) RemovePusher(pusher *Pusher) {
-	removed := false
 	server.pushersLock.Lock()
 	if _pusher, ok := server.pushers[pusher.Path()]; ok && pusher.ID() == _pusher.ID() {
 		delete(server.pushers, pusher.Path())
 		log.Info(fmt.Sprintf("%v end, now pusher size[%d]\n", pusher, len(server.pushers)))
-		removed = true
 	}
 	server.pushersLock.Unlock()
-	if removed {
-		server.removePusherCh <- pusher
-	}
 }
 
 func (server *Server) GetPusher(path string) (pusher *Pusher) {
