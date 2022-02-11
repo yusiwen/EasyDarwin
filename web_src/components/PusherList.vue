@@ -70,8 +70,11 @@
                                 </a>
                             </div>
                             <div class="btn-group">
-                                <a role="button" class="btn btn-xs btn-danger" @click.prevent="video(scope.row)">
+                                <a v-if="vstatus.get(scope.row.id) == null" role="button" style="background-color: green;color: white;" class="btn btn-xs" @click.prevent="video(scope.row,0)">
                                   <i class="fa fa-toggle-right"></i> 录像
+                                </a>
+                                <a v-else role="button" class="btn btn-xs btn-danger" @click.prevent="video(scope.row,1)">
+                                  <i class="fa fa-toggle-right"></i> 停止
                                 </a>
                             </div>
                             <div class="btn-group">
@@ -110,7 +113,8 @@ export default {
       total: 0,
       timer: 0,
       pageSize: 10,
-      currentPage: 1
+      currentPage: 1,
+      vstatus: new Map()
     };
   },
   beforeDestroy() {
@@ -181,6 +185,43 @@ export default {
       this.$confirm(`确认删除 ${row.path} ?`, "提示").then(() => {
         $.get("/api/v1/stream/delete", {
           id: row.id
+        }).then(data => {
+          this.getPushers();
+        })
+      }).catch(() => {});
+    },
+    video(row,flag) {
+      console.log(row.id);
+      var date = Date.now();
+      this.$confirm(`确认 ${flag==0?"录屏":"停止"} ?`, "提示").then(() => {
+        if(flag==0){
+          $.get("/api/v1/record/start", {
+            streamId: row.id,
+            tag: date
+          }).then(data => {
+            this.getPushers();
+            this.vstatus.set(row.id,date)
+            console.info(this.vstatus)
+          })
+        }else{
+          $.get("/api/v1/record/stop", {
+            streamId: row.id,
+            tag: this.vstatus.get(row.id)
+          }).then(data => {
+            this.getPushers();
+            this.vstatus.delete(row.id)
+          })
+        }
+      }).catch(() => {});
+    },
+    screen(row) {
+      console.log(row.id)
+      this.$confirm(`确认截屏 ${row.path} ?`, "提示").then(() => {
+        var date = Date.now();
+        console.log(row.id,date)
+        $.get("/api/v1/record/screenshot", {
+          streamId: row.id,
+          tag: date
         }).then(data => {
           this.getPushers();
         })
