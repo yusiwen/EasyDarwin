@@ -176,7 +176,11 @@ func (p *program) Start(s service.Service) (err error) {
 			}
 			for i := len(streams) - 1; i > -1; i-- {
 				v := streams[i]
-				if rtsp.GetServer().GetPusher(v.CustomPath) != nil {
+				if p := rtsp.GetServer().GetPusher(v.CustomPath); p != nil {
+					if !p.Stopped() && p.FlvPusher.Stopped {
+						log.Info(fmt.Sprintf("stopped flv-pusher detected [%v], restarting...", p))
+						go p.FlvPusher.Start()
+					}
 					continue
 				}
 				agent := fmt.Sprintf("EasyDarwinGo/%s", routers.BuildVersion)

@@ -10,6 +10,7 @@ import (
 	u "github.com/MeloQi/EasyGoLib/utils"
 	ffmpeg "github.com/u2takey/ffmpeg-go"
 	"gopkg.in/natefinch/lumberjack.v2"
+	"sync"
 
 	"io/ioutil"
 	"net/http"
@@ -29,7 +30,10 @@ type FlvPusher struct {
 	SourceVCodec string
 	AppName      string
 	RoomName     string
-	Cancel       context.CancelFunc
+	Stopped      bool
+
+	cancel context.CancelFunc
+	lock   sync.Mutex
 }
 
 func NewFlvPusher(source string, acodec string, vcodec string, flvServer *FlvServer, app string, room string) *FlvPusher {
@@ -40,7 +44,8 @@ func NewFlvPusher(source string, acodec string, vcodec string, flvServer *FlvSer
 		FlvServer:    flvServer,
 		AppName:      app,
 		RoomName:     room,
-		Cancel:       nil,
+		Stopped:      true,
+		cancel:       nil,
 	}
 	return pusher
 }
@@ -71,10 +76,19 @@ func (s *FlvPusher) getFlvPushUrl() (string, error) {
 }
 
 func (s *FlvPusher) Start() error {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	if !s.Stopped {
+		log.Warn(fmt.Sprintf("flv-pusher %v is already running", s))
+		return nil
+	}
+
 	pushUrl, err := s.getFlvPushUrl()
 	if err != nil {
 		return err
 	}
+	s.Stopped = false
 
 	go func() {
 		ffmpegCmd := config.Conf().Section("codec").Key("ffmpeg_binary").MustString("ffmpeg")
@@ -105,7 +119,7 @@ func (s *FlvPusher) Start() error {
 		}
 		stream = stream.WithOutput(out).WithErrorOutput(out)
 
-		s.Cancel = stream.GetCancelFunc()
+		s.cancel = stream.GetCancelFunc()
 
 		log.Info(fmt.Sprintf("FlvPusher[%s][%s] starting...", s.AppName, s.RoomName))
 		err = stream.RunWith(ffmpegCmd)
@@ -113,13 +127,18 @@ func (s *FlvPusher) Start() error {
 			log.Error("failed to start ffmpeg: ", err)
 		}
 		log.Info(fmt.Sprintf("FlvPusher[%s][%s] finished...", s.AppName, s.RoomName))
+
+		s.lock.Lock()
+		s.Stopped = true
+		s.cancel = nil
+		s.lock.Unlock()
 	}()
 	return nil
 }
 
 func (s *FlvPusher) Stop() error {
-	if s != nil && s.Cancel != nil {
-		s.Cancel()
+	if s != nil && s.cancel != nil {
+		s.cancel()
 	}
 	return nil
 }

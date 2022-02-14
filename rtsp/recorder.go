@@ -87,8 +87,10 @@ func (r *Recorder) Start() error {
 			ffmpegCmd := config.Conf().Section("codec").Key("ffmpeg_binary").MustString("ffmpeg")
 			outputArgs := ffmpeg.KwArgs{}
 			if r.OutputFormat == Jpeg {
+				// Screenshot
 				outputArgs["vframes"] = "1"
 			} else {
+				// Video recording
 				outputArgs["c:v"] = "copy"
 				outputArgs["c:a"] = "copy"
 				if r.OutputFormat == M3u8 {
