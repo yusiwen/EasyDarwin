@@ -41,6 +41,12 @@ My custom modded version of EasyDarwin
 - Add screenshot API
 - Add hostname options to set hostname when deployed behind reverse proxy
 
+2022-02-14:
+
+- Gracefully shutdown pushers and daemon goroutines
+- Make flv pushers ffmpeg routine single instance
+- Bug fixes
+
 ## Build
 
 ### Pre-requisites
