@@ -203,6 +203,7 @@ export default {
           }).then(data => {
             this.getPushers();
             this.vstatus.set(row.id,date)
+            sessionStorage.setItem(row.id,date)
             console.info(this.vstatus)
           })
         }else{
@@ -212,6 +213,7 @@ export default {
           }).then(data => {
             this.getPushers();
             this.vstatus.delete(row.id)
+            sessionStorage.removeItem(row.id)
           })
         }
       }).catch(() => {});
