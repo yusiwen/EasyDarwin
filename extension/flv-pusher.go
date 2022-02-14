@@ -118,7 +118,7 @@ func (s *FlvPusher) Start() error {
 }
 
 func (s *FlvPusher) Stop() error {
-	if s != nil {
+	if s != nil && s.Cancel != nil {
 		s.Cancel()
 	}
 	return nil
