@@ -24,6 +24,9 @@ import (
 var (
 	gitCommitCode string
 	buildDateTime string
+
+	daemonExitCh chan struct{}
+	daemonCancel context.CancelFunc
 )
 
 type program struct {
@@ -32,6 +35,7 @@ type program struct {
 	rtspPort   int
 	rtspServer *rtsp.Server
 	flvServer  *extension.FlvServer
+	Stopped    bool
 }
 
 func (p *program) StopHTTP() (err error) {
@@ -140,6 +144,7 @@ func (p *program) Start(s service.Service) (err error) {
 		log.Debug("log files -->", utils.LogDir())
 		log.SetOutput(utils.GetLogWriter())
 	}
+
 	go func() {
 		for range routers.API.RestartChan {
 			p.StopHTTP()
@@ -152,8 +157,16 @@ func (p *program) Start(s service.Service) (err error) {
 		}
 	}()
 
-	go func() {
+	daemonExitCh = make(chan struct{})
+	ctx, c := context.WithCancel(context.Background())
+	daemonCancel = c
+	go func(ctx context.Context) {
 		log.Info("starting daemon for pulling streams")
+		defer func() {
+			log.Info("stopped daemon for pulling streams")
+			daemonExitCh <- struct{}{}
+		}()
+
 		for {
 			var streams []models.Stream
 			result := db.SQL.Find(&streams)
@@ -194,15 +207,27 @@ func (p *program) Start(s service.Service) (err error) {
 					rtsp.GetServer().AddPusher(pusher, false)
 				}
 			}
-			time.Sleep(10 * time.Second)
+			//time.Sleep(10 * time.Second)
+			t := time.NewTimer(10 * time.Second)
+			select {
+			case <-ctx.Done():
+			case <-t.C:
+			}
+
+			if p.Stopped {
+				break
+			}
 		}
-	}()
+	}(ctx)
 	return
 }
 
 func (p *program) Stop(s service.Service) (err error) {
 	defer log.Info("********** STOP **********")
-	defer utils.CloseLogWriter()
+
+	p.Stopped = true
+	daemonCancel()
+
 	p.StopHTTP()
 	p.StopRTSP()
 	p.StopFlvServer()
@@ -235,6 +260,7 @@ func main() {
 		rtspPort:   rtspServer.TCPPort,
 		rtspServer: rtspServer,
 		flvServer:  flvServer,
+		Stopped:    false,
 	}
 	s, err := service.New(p, svcConfig)
 	if err != nil {
@@ -259,4 +285,7 @@ func main() {
 		log.Error(err)
 		utils.PauseExit()
 	}
+
+	<-daemonExitCh
+	utils.CloseLogWriter()
 }
